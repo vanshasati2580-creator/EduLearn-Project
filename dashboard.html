@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="container py-5">
+  <div class="row mb-5 align-items-center">
+    <div class="col-md-8 slide-in-left">
+      <h2 class="fw-bold mb-1">Welcome back, {{ current_user.name }}!</h2>
+      <p class="text-secondary">Keep up the great work.</p>
+    </div>
+    <div class="col-md-4 text-md-end slide-in-right">
+      <div class="d-inline-block bg-white p-3 rounded-4 shadow-sm border text-center me-2">
+        <div class="small text-uppercase text-secondary fw-bold" style="font-size:0.7rem;">Total XP</div>
+        <div class="h3 fw-bold text-primary mb-0">{{ current_user.xp or 0 }}</div>
+      </div>
+      <div class="d-inline-block bg-white p-3 rounded-4 shadow-sm border text-center">
+        <div class="small text-uppercase text-secondary fw-bold" style="font-size:0.7rem;">Badges</div>
+        <div class="h3 fw-bold text-warning mb-0">{{ current_user.badges|length }}</div>
+      </div>
+    </div>
+  </div>
+
+  {% if current_user.role == 'pending_instructor' %}
+  <div class="alert alert-warning shadow-sm border-0 mb-5 d-flex align-items-center">
+    <i class="fas fa-clock fs-4 me-3 text-warning"></i>
+    <div>
+      <h5 class="alert-heading mb-1 fw-bold">Instructor Account Pending Verification</h5>
+      {% if current_user.verification_doc_url %}
+      <p class="mb-0 text-dark">Your documents have been submitted. An administrator will review your application
+        shortly.</p>
+      {% if current_user.rejection_reason %}
+      <hr>
+      <p class="mb-0 text-danger fw-bold">Previous Application Rejected:</p>
+      <p class="mb-0 text-danger">{{ current_user.rejection_reason }}</p>
+      <a href="{{ url_for('instructor_onboarding') }}" class="btn btn-sm btn-outline-danger mt-2">Re-submit
+        Documents</a>
+      {% endif %}
+      {% else %}
+      <p class="mb-0 text-dark">Your account is currently under review. You must submit verification documents before
+        you can create courses.</p>
+      <a href="{{ url_for('instructor_onboarding') }}" class="btn btn-sm btn-warning mt-2 fw-bold text-dark">Submit
+        Documents Now</a>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
+
+  {% if current_user.badges %}
+  <div class="mb-5 fade-up">
+    <h5 class="fw-bold mb-3">Your Achievements</h5>
+    <div class="d-flex flex-wrap gap-3">
+      {% for ub in current_user.badges %}
+      {% set b = ub.badge %}
+      {% if b %}
+      <div class="d-flex align-items-center bg-white border p-2 rounded-pill pe-3 shadow-sm">
+        <div
+          class="bg-warning bg-opacity-10 text-warning rounded-circle d-flex align-items-center justify-content-center me-2"
+          style="width:40px;height:40px;">
+          <i class="fas {{ b.icon }}"></i>
+        </div>
+        <div>
+          <div class="fw-bold" style="font-size:0.9rem;">{{ b.name }}</div>
+          <div class="text-secondary small" style="font-size:0.75rem;">{{ b.description }}</div>
+        </div>
+      </div>
+      {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <h4 class="fw-bold mb-4 slide-in-left">My Courses</h4>
+  <div class="row g-4">
+    {% for course, pct in enrolls %}
+    <div class="col-md-6 col-lg-4">
+      <div class="card glass h-100 p-3 pop-card zoom-in">
+        <div class="d-flex justify-content-between align-items-start mb-2">
+          <span class="badge bg-primary bg-opacity-10 text-primary">{{ course.title|truncate(20) }}</span>
+          {% if pct == 100 %}<i class="fas fa-check-circle text-success"></i>{% endif %}
+        </div>
+        <h5 class="mb-1">{{ course.title }}</h5>
+        <div class="small text-secondary mb-3">{{ course.instructor }}</div>
+
+        <div class="mt-auto">
+          <div class="d-flex justify-content-between small fw-bold mb-1">
+            <span>Progress</span>
+            <span>{{ pct }}%</span>
+          </div>
+          <div class="progress" style="height: 6px;">
+            <div class="progress-bar bg-primary rounded-pill" style="width:{{ pct }}%"></div>
+          </div>
+          <a class="btn btn-sm btn-outline-primary w-100 rounded-pill mt-3"
+            href="{{ url_for('course_detail', cid=course.id) }}">Continue</a>
+        </div>
+      </div>
+    </div>
+    {% else %}
+    <div class="col-12 text-center py-5">
+      <p class="text-secondary">You haven't enrolled in any courses yet.</p>
+      <a href="{{ url_for('index') }}" class="btn btn-primary rounded-pill">Explore Courses</a>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

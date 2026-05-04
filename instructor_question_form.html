@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="container py-5">
+  {% set is_edit = question is not none %}
+  <div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+      <h2 class="fw-bold mb-0">{{ 'Edit Question' if is_edit else 'New Question' }}</h2>
+      <div class="text-secondary">Course: {{ course.title }} · Quiz: {{ quiz.title }}</div>
+    </div>
+    <a href="{{ request.args.get('back') or url_for('instructor_questions', qid=quiz.id) }}" class="btn btn-outline-secondary rounded-pill">Back</a>
+  </div>
+
+  <div class="card glass p-4">
+    <form method="post" action="{{ (url_for('instructor_question_edit', quesid=question.id, back=request.args.get('back')) if is_edit else url_for('instructor_question_new', qid=quiz.id, back=request.args.get('back'))) }}">
+      <div class="row g-3">
+        <div class="col-12">
+          <label class="form-label">Question Text</label>
+          <textarea class="form-control" name="text" rows="4" placeholder="Enter the question text" required>{{ question.text if is_edit }}</textarea>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Option A</label>
+          <input class="form-control" name="option_a" type="text" value="{{ question.option_a if is_edit }}" required>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Option B</label>
+          <input class="form-control" name="option_b" type="text" value="{{ question.option_b if is_edit }}" required>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Option C</label>
+          <input class="form-control" name="option_c" type="text" value="{{ question.option_c if is_edit }}" required>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Option D</label>
+          <input class="form-control" name="option_d" type="text" value="{{ question.option_d if is_edit }}" required>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Correct Answer</label>
+          <select class="form-select" name="correct" required>
+            {% set corr = question.correct if is_edit else '' %}
+            <option value="" disabled {{ 'selected' if not corr }}>Select</option>
+            <option value="A" {{ 'selected' if corr=='A' }}>A</option>
+            <option value="B" {{ 'selected' if corr=='B' }}>B</option>
+            <option value="C" {{ 'selected' if corr=='C' }}>C</option>
+            <option value="D" {{ 'selected' if corr=='D' }}>D</option>
+          </select>
+        </div>
+      </div>
+      <div class="d-flex gap-2 mt-4">
+        <button class="btn btn-primary rounded-pill">{{ 'Save Changes' if is_edit else 'Create Question' }}</button>
+        <a href="{{ request.args.get('back') or url_for('instructor_questions', qid=quiz.id) }}" class="btn btn-outline-secondary rounded-pill">Cancel</a>
+      </div>
+    </form>
+  </div>
+</section>
+{% endblock %}

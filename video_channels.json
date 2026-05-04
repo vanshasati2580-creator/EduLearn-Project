@@ -1,0 +1,55 @@
+{
+  "default": [
+    "UC8butISFwT-Wl7EV0hUK0BQ",  
+    "UC29ju8bIPH5as8OGnQzwJyA"   
+  ],
+  "fullstack": [
+    "UC29ju8bIPH5as8OGnQzwJyA",
+    "UC8butISFwT-Wl7EV0hUK0BQ"
+  ],
+  "python": [
+    "UCCezIgC97PvUuR4_gbFUs5g",  
+    "UC4JX40jDee_tINbkjycV4Sg",  
+    "UCfzlCWGWYyIQ0aLC5w48gBQ",  
+    "UC8butISFwT-Wl7EV0hUK0BQ"   
+  ],
+  "datasci": [
+    "UCR1-GEpyOPzT2AO4D_eifdw",  
+    "UCfzlCWGWYyIQ0aLC5w48gBQ",  
+    "UC8butISFwT-Wl7EV0hUK0BQ"   
+  ],
+  "ml": [
+    "UCYO_jab_esuFRV4b17AJtAw",  
+    "UCR1-GEpyOPzT2AO4D_eifdw",  
+    "UCfzlCWGWYyIQ0aLC5w48gBQ"   
+  ],
+  "security": [
+    "UClcE-kVhqyiHCcjYwcpfj9w",  
+    "UCVeW9qkBjo3zosnqUbG7CFw"   
+  ],
+  "cloud": [
+    "UCdngmbVKX1Tgre699-XLlUA",  
+    "UC8butISFwT-Wl7EV0hUK0BQ"   
+  ],
+  "uiux": [
+    "UCVyRiMvfUNMA1UPlDPzG5Ow",  
+    "UCeB_OpLspKJGiKv1CYkWFFw"   
+  ],
+  "marketing": [
+    "UC8butISFwT-Wl7EV0hUK0BQ"   
+  ],
+  "finance": [
+    "UC9PeEoH__n7cNSh68rDyk6w",  
+    "UC2OaPJtQdQ-yjYwz0KuZzQg"   
+  ],
+  "english": [
+    "UCz4tgANd4yy8Oe0iXCdSWfA"   
+  ],
+  "productivity": [
+    "UCoOae5nYA7VqaXzerajD0lg"   
+  ],
+  "general": [
+    "UC8butISFwT-Wl7EV0hUK0BQ",
+    "UC29ju8bIPH5as8OGnQzwJyA"
+  ]
+}

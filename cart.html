@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="container py-5">
+  <h2 class="fw-bold mb-3">Your Cart</h2>
+  {% if courses %}
+  <div class="row g-4">
+    <div class="col-lg-7">
+      <div class="card glass p-4 p-lg-5">
+        <h5 class="fw-semibold mb-3">Payment Details</h5>
+        <form method="post" action="{{ url_for('cart_checkout') }}">
+          <div class="mb-3">
+            <label class="form-label">Cardholder Name</label>
+            <input class="form-control form-control-lg" type="text" name="name" placeholder="Jane Doe" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Card Number</label>
+            <input class="form-control form-control-lg cc-number" inputmode="numeric" autocomplete="cc-number" name="number" placeholder="4242 4242 4242 4242" required>
+          </div>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">Expiry</label>
+              <input class="form-control form-control-lg cc-exp" inputmode="numeric" autocomplete="cc-exp" name="exp" placeholder="MM/YY" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">CVV</label>
+              <input class="form-control form-control-lg cc-cvv" inputmode="numeric" autocomplete="cc-csc" name="cvv" placeholder="123" required>
+            </div>
+          </div>
+          <div class="row g-3 mt-1">
+            <div class="col-md-8">
+              <label class="form-label">Coupon code (optional)</label>
+              <input class="form-control form-control-lg" name="coupon" placeholder="SAVE10" value="{{ coupon_code }}">
+            </div>
+          </div>
+          <div class="small text-secondary mt-2">Try: 4242 4242 4242 4242 • any future date • CVV 123</div>
+          <button class="btn btn-success btn-lg rounded-pill mt-4 w-100">Pay ${{ '%.2f'|format(final_cents/100) }}</button>
+        </form>
+      </div>
+    </div>
+    <div class="col-lg-5">
+      <div class="p-4 checkout-summary">
+        <h5 class="fw-semibold mb-3">Order Summary</h5>
+        {% for c in courses %}
+        <div class="d-flex align-items-center mb-3">
+          <div class="rounded-3 overflow-hidden me-3" style="width:72px; height:48px;">
+            <img src="{{ c.thumbnail }}" class="object-cover w-100 h-100" alt="">
+          </div>
+          <div class="flex-grow-1">
+            <div class="fw-semibold">{{ c.title }}</div>
+            <div class="small text-secondary">by {{ c.instructor }}</div>
+          </div>
+          <div class="text-end">
+            <div>${{ '%.2f'|format(prices[c.id]/100) }}</div>
+            <form method="post" action="{{ url_for('cart_remove', cid=c.id) }}">
+              <button class="btn btn-link text-danger small p-0">Remove</button>
+            </form>
+          </div>
+        </div>
+        {% endfor %}
+        <hr class="opacity-25">
+        <div class="d-flex justify-content-between"><span>Subtotal</span><span>${{ '%.2f'|format(total_cents/100) }}</span></div>
+        {% if discount_cents and discount_cents > 0 %}
+        <div class="d-flex justify-content-between text-success"><span>Discount</span><span>- ${{ '%.2f'|format(discount_cents/100) }}</span></div>
+        {% endif %}
+        <div class="d-flex justify-content-between"><span>Taxes</span><span>$0.00</span></div>
+        <div class="d-flex justify-content-between fw-bold mt-2"><span>Total</span><span>${{ '%.2f'|format(final_cents/100) }}</span></div>
+        <form class="mt-3" method="get" action="{{ url_for('cart_view') }}">
+          <div class="input-group">
+            <input class="form-control" name="code" placeholder="Have a coupon?" value="{{ coupon_code }}">
+            <button class="btn btn-outline-primary">Apply</button>
+          </div>
+        </form>
+        <div class="mt-3 small text-secondary">Secure demo checkout. No real charge will occur.</div>
+      </div>
+    </div>
+  </div>
+  {% else %}
+    <p class="text-secondary">Your cart is empty. <a href="{{ url_for('index') }}">Continue shopping</a>.</p>
+  {% endif %}
+</section>
+{% endblock %}

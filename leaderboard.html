@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="container py-5 mt-4">
+    <div class="text-center mb-5 fade-up">
+        <div class="d-inline-flex align-items-center justify-content-center rounded-circle bg-warning bg-opacity-10 text-warning mb-3" style="width: 80px; height: 80px;">
+            <i class="fa-solid fa-trophy fa-2x"></i>
+        </div>
+        <h1 class="fw-bold mb-3">Leaderboard</h1>
+        <p class="lead text-secondary">Top learners on EduLearn</p>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card glass border-0 shadow-lg fade-up" style="animation-delay: 0.1s; overflow: hidden;">
+                
+                <!-- Table Header -->
+                <div class="d-none d-md-flex px-4 py-3 border-bottom border-secondary border-opacity-25 text-uppercase small fw-bold text-secondary tracking-wide">
+                    <div style="width: 80px;">Rank</div>
+                    <div class="flex-grow-1">Learner</div>
+                    <div style="width: 120px;" class="text-end pe-4">XP Evaluated</div>
+                </div>
+
+                <!-- Table Body -->
+                <div class="d-flex flex-column">
+                    {% for u in users %}
+                    {% set is_me = (current_user.is_authenticated and u.id == current_user.id) %}
+                    <div class="d-flex align-items-center px-4 py-3 border-bottom border-light border-opacity-10 transition-hover {{ 'bg-primary bg-opacity-10' if is_me else '' }}">
+                        
+                        <!-- Rank -->
+                        <div class="fw-bold {{ 'text-primary fs-5' if loop.index <= 3 else 'text-secondary' }}" style="width: 80px;">
+                            #{{ loop.index }}
+                        </div>
+                        
+                        <!-- User Info -->
+                        <div class="flex-grow-1 d-flex align-items-center">
+                            <div class="avatar-circle {{ 'bg-warning' if loop.index == 1 else ('bg-secondary' if loop.index == 2 else ('bg-primary' if loop.index == 3 else 'bg-dark')) }} text-white me-3 d-flex align-items-center justify-content-center rounded-circle shadow-sm"
+                                style="width: 48px; height: 48px; font-size: 1.2rem; font-weight: 600;">
+                                {{ u.name[:1].upper() }}
+                            </div>
+                            <div>
+                                <div class="fw-bold fs-6 mb-1 text-light-mode-dark">
+                                    {{ u.name }}
+                                    {% if loop.index == 1 %}<i class="fa-solid fa-crown text-warning ms-1" title="Top Learner"></i>{% endif %}
+                                    {% if is_me %}<span class="badge bg-primary ms-2 rounded-pill small">You</span>{% endif %}
+                                </div>
+                                <div class="d-flex flex-wrap gap-1">
+                                    {% for ub in u.badges %}
+                                        {% set b = ub.badge %}
+                                        {% if b %}
+                                        <span class="badge bg-dark bg-opacity-50 text-light border border-secondary border-opacity-25 rounded-pill" title="{{ b.name }}: {{ b.description }}">
+                                            <i class="fas {{ b.icon }} text-warning me-1"></i> <span class="fw-normal">{{ b.name }}</span>
+                                        </span>
+                                        {% endif %}
+                                    {% endfor %}
+                                    {% if not u.badges %}
+                                        <span class="small text-secondary fst-italic">No badges yet</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- XP -->
+                        <div style="width: 120px;" class="text-end fw-bold {{ 'text-warning fs-5' if loop.index == 1 else 'text-primary' }}">
+                            {{ u.xp or 0 }} XP
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                {% if not users %}
+                <div class="p-5 text-center text-secondary">
+                    <i class="fa-solid fa-ghost fa-3x mb-3 opacity-50"></i>
+                    <h5>No learners on the board yet!</h5>
+                    <p>Start a course and earn some XP to claim the #1 spot.</p>
+                </div>
+                {% endif %}
+
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    .transition-hover {
+        transition: all 0.2s ease-in-out;
+    }
+    .transition-hover:hover {
+        background-color: rgba(255, 255, 255, 0.05);
+        transform: translateX(4px);
+    }
+    .tracking-wide {
+        letter-spacing: 0.05em;
+    }
+    /* Ensure text is readable in light mode too */
+    :root[data-theme="light"] .text-light-mode-dark { color: #212529 !important; }
+    :root[data-theme="dark"] .text-light-mode-dark { color: #f8f9fa !important; }
+    /* Fallback if data-theme is not dynamically swapped but relies on media queries or body class */
+    body:not(.dark-mode) .text-light-mode-dark { color: inherit; }
+</style>
+{% endblock %}

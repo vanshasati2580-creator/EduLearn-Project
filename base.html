@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>EduLearn</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=17">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  {% block extra_head %}{% endblock %}
+</head>
+
+<body data-color-theme="{{ active_color_theme | default('ocean') }}">
+  <nav class="navbar navbar-expand-lg navbar-dark nav-glass fixed-top">
+    <div class="container">
+      <a class="navbar-brand brand" href="{{ url_for('index') }}">EduLearn</a>
+      <button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#nav"><span
+          class="navbar-toggler-icon"></span></button>
+      <div id="nav" class="collapse navbar-collapse">
+        <form class="ms-lg-3 flex-grow-1 flex-lg-grow-0 d-none d-lg-flex" action="{{ url_for('search') }}" method="get" role="search" aria-label="Site search">
+          <div class="header-search-container">
+            <i class="fas fa-search search-icon"></i>
+            <input class="header-search-input" type="search" name="q" placeholder="Search courses..." aria-label="Search courses" value="{{ request.args.get('q','') }}" autocomplete="off" spellcheck="false">
+          </div>
+        </form>
+        <ul class="navbar-nav ms-auto align-items-lg-center gap-1">
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('index') }}">Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('about') }}">About</a></li>
+          <li class="nav-item d-flex align-items-center mx-1">
+            <button class="btn btn-sm btn-outline-light rounded-pill theme-toggle" type="button" aria-label="Toggle theme">☀️</button>
+          </li>
+          
+          {% if current_user.is_authenticated %}
+          
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Learn</a>
+            <ul class="dropdown-menu dropdown-menu-end glass-dropdown">
+              <li><a class="dropdown-item" href="{{ url_for('dashboard') }}">Dashboard</a></li>
+              <li><a class="dropdown-item" href="{{ url_for('student_attendance') }}">Attendance</a></li>
+              <li><a class="dropdown-item" href="{{ url_for('leaderboard') }}">Leaderboard</a></li>
+            </ul>
+          </li>
+
+          {% if current_user.role == 'instructor' or current_user.role == 'admin' %}
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Teach</a>
+            <ul class="dropdown-menu dropdown-menu-end glass-dropdown">
+              <li><a class="dropdown-item" href="{{ url_for('instructor_courses') }}">My Courses</a></li>
+              <li><a class="dropdown-item" href="{{ url_for('instructor_analytics') }}">Analytics</a></li>
+              <li><a class="dropdown-item" href="{{ url_for('instructor_attendance') }}">Attendance</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item text-primary" href="{{ url_for('instructor_course_new') }}"><i class="fas fa-plus me-2"></i>New Course</a></li>
+            </ul>
+          </li>
+          {% endif %}
+
+          {% if current_user.role == 'admin' %}
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Admin</a>
+            <ul class="dropdown-menu dropdown-menu-end glass-dropdown">
+              <li><a class="dropdown-item" href="{{ url_for('admin_users') }}">Users</a></li>
+              <li><a class="dropdown-item" href="{{ url_for('admin_approvals') }}">Approvals</a></li>
+              <li><a class="dropdown-item" href="{{ url_for('admin_courses') }}">Courses</a></li>
+              <li><a class="dropdown-item" href="{{ url_for('admin_attendance_report') }}">Reports</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item" href="{{ url_for('admin_theme') }}">✨ Appearance</a></li>
+            </ul>
+          </li>
+          {% endif %}
+
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('wishlist') }}" title="Wishlist"><i class="fas fa-heart"></i></a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('cart_view') }}" title="Cart"><i class="fas fa-shopping-cart"></i></a></li>
+          
+          <li class="nav-item ms-2">
+            <a class="btn btn-sm btn-outline-danger rounded-pill px-3" href="{{ url_for('logout') }}">Logout</a>
+          </li>
+          
+          {% else %}
+          <li class="nav-item ms-2"><a class="btn btn-sm btn-outline-light rounded-pill px-3" href="{{ url_for('login') }}">Login</a></li>
+          <li class="nav-item ms-1"><a class="btn btn-sm btn-primary rounded-pill px-3" href="{{ url_for('register') }}">Sign up</a></li>
+          {% endif %}
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+  <div class="toast-container position-fixed top-0 end-0 p-3">
+    {% for category, message in messages %}
+    <div
+      class="toast show text-bg-{{ 'success' if category=='success' else 'primary' if category=='info' else 'danger' if category=='danger' else 'secondary' }}">
+      <div class="d-flex">
+        <div class="toast-body">{{ message }}</div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+  {% endwith %}
+
+  <main class="pt-5">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="site-footer py-5 mt-5">
+    <div class="container">
+      <div class="row g-4">
+        <div class="col-lg-4 mb-4 mb-lg-0">
+          <a class="navbar-brand brand fs-4 d-inline-block mb-3" href="{{ url_for('index') }}"
+            style="color: inherit;">EduLearn</a>
+          <p class="mb-4 pe-lg-4" style="font-size: 0.95rem;">Empowering learners worldwide to master modern
+            technologies and build real-world skills through interactive courses and expert guidance.</p>
+          <div class="footer-socials d-flex gap-2">
+            <a href="#" aria-label="Twitter"><i class="fa-brands fa-twitter"></i></a>
+            <a href="#" aria-label="LinkedIn"><i class="fa-brands fa-linkedin-in"></i></a>
+            <a href="#" aria-label="GitHub"><i class="fa-brands fa-github"></i></a>
+          </div>
+        </div>
+
+        <div class="col-sm-6 col-lg-2 mb-4 mb-sm-0">
+          <h6>Platform</h6>
+          <ul class="list-unstyled">
+            <li><a href="{{ url_for('search', q='') }}">Browse Courses</a></li>
+            <li><a href="{{ url_for('about') }}">About Us</a></li>
+            <li><a href="{{ url_for('leaderboard') }}">Leaderboard</a></li>
+            <li><a
+                href="{{ url_for('instructor_course_new') if current_user.is_authenticated else url_for('login') }}">Teach
+                on EduLearn</a></li>
+          </ul>
+        </div>
+
+        <div class="col-sm-6 col-lg-2 mb-4 mb-sm-0">
+          <h6>Support</h6>
+          <ul class="list-unstyled">
+            <li><a href="#">Help Center</a></li>
+            <li><a href="#">Terms of Service</a></li>
+            <li><a href="#">Privacy Policy</a></li>
+            <li><a href="#">Contact Us</a></li>
+          </ul>
+        </div>
+
+        <div class="col-lg-4">
+          <h6>Stay in the loop</h6>
+          <p style="font-size: 0.9rem;">Join our newsletter for fresh content and weekly tips.</p>
+          <div class="input-group mb-3 mt-3">
+            <input type="email" class="form-control rounded-start-pill py-2 ps-4" placeholder="Enter your email"
+              aria-label="Email address">
+            <button class="btn btn-primary rounded-end-pill px-4 m-0 px-md-4" type="button"
+              style="transform: none !important;">Subscribe</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="row mt-5 pt-4 border-top" style="border-color: rgba(255,255,255,0.1) !important;">
+        <div class="col-md-6 text-center text-md-start mb-3 mb-md-0" style="font-size: 0.85rem;">
+          &copy; 2026 EduLearn. All rights reserved. Built with Flask.
+        </div>
+        <div class="col-md-6 text-center text-md-end" style="font-size: 0.85rem;">
+          Designed for active learning
+        </div>
+      </div>
+    </div>
+  </footer>
+
+
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="{{ url_for('static', filename='js/app.js') }}?v=11"></script>
+</body>
+
+</html>

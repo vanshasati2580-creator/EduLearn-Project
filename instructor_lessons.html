@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="container py-5">
+  <div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+      <h2 class="fw-bold mb-0">Manage Lessons</h2>
+      <div class="text-secondary">Course: {{ course.title }}</div>
+    </div>
+    <div class="d-flex gap-2">
+      <a href="{{ request.args.get('back') or url_for('instructor_courses') }}" class="btn btn-outline-secondary rounded-pill">Back</a>
+      <a href="{{ url_for('instructor_quizzes', cid=course.id, back=request.args.get('back')) }}" class="btn btn-outline-secondary rounded-pill">Manage Quizzes</a>
+      <a href="{{ url_for('instructor_lesson_new', cid=course.id, back=request.args.get('back')) }}" class="btn btn-primary rounded-pill">+ New Lesson</a>
+    </div>
+  </div>
+
+  <div class="card glass p-0">
+    <div class="table-responsive">
+      <table class="table table-glass table-hover align-middle mb-0">
+        <thead>
+          <tr>
+            <th style="width:90px">Position</th>
+            <th>Title</th>
+            <th>Video</th>
+            <th class="text-end" style="width:220px">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for l in lessons %}
+          <tr>
+            <td><span class="badge text-bg-primary">{{ l.position }}</span></td>
+            <td>{{ l.title }}</td>
+            <td class="small text-secondary">{{ l.video_url or '—' }}</td>
+            <td class="text-end">
+              <a class="btn btn-outline-primary btn-sm" href="{{ url_for('instructor_lesson_edit', lid=l.id, back=request.args.get('back')) }}">Edit</a>
+              <form class="d-inline" method="post" action="{{ url_for('instructor_lesson_delete', lid=l.id, back=request.args.get('back')) }}" onsubmit="return confirm('Delete lesson {{ l.title }}?');">
+                <button class="btn btn-outline-secondary btn-sm">Delete</button>
+              </form>
+              <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('lesson_view', lid=l.id) }}">Preview</a>
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="4" class="text-center text-secondary">No lessons yet. Click "+ New Lesson" to add one.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+{% endblock %}

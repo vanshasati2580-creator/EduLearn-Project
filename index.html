@@ -1,0 +1,414 @@
+
+{% extends "base.html" %}
+
+{% block extra_head %}
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {"@type":"Question","name":"How do I get a certificate?","acceptedAnswer":{"@type":"Answer","text":"Complete a course to 100% and download your certificate from the certificate page."}},
+      {"@type":"Question","name":"Can I get a refund?","acceptedAnswer":{"@type":"Answer","text":"This demo uses a simulated checkout. In production, refunds are typically processed within 30 days."}}
+    ]
+  }
+  </script>
+{% endblock %}
+
+{% block content %}
+
+{% if promo_coupon %}
+<div class="py-2" style="background:rgba(0,86,210,.15); border-bottom:1px solid var(--border)">
+  <div class="container d-flex flex-wrap gap-2 align-items-center justify-content-between small">
+    <div>
+      <strong>Promo:</strong> Use code <code>{{ promo_coupon.code }}</code>
+      {% if promo_coupon.percent_off %}for {{ promo_coupon.percent_off }}% off{% elif promo_coupon.amount_off_cents %}and save ${{ '%.2f'|format((promo_coupon.amount_off_cents or 0)/100) }}{% endif %}
+      {% if promo_coupon.expires_at %}<span class="text-secondary">· Expires {{ promo_coupon.expires_at.strftime('%b %d, %Y') }}</span>{% endif %}
+    </div>
+    <div class="d-flex gap-2">
+      <a href="{{ url_for('cart_view') }}?code={{ promo_coupon.code }}" class="btn btn-sm btn-outline-primary rounded-pill js-hero-cta">Apply in Cart</a>
+      <a href="#trending" class="btn btn-sm btn-primary rounded-pill">Explore Courses</a>
+    </div>
+  </div>
+ </div>
+{% endif %}
+
+<header class="hero d-flex align-items-center" data-hero>
+  <div class="container py-5">
+    <div class="row align-items-center js-hero-row">
+      <div class="col-lg-6 js-hero-left">
+        <h1 class="display-4 fw-bold slide-in-left hero-title-gradient" style="letter-spacing: -1.5px; line-height: 1.1; font-weight: 900 !important;">Learn from the<br>world’s best courses</h1>
+        <p class="lead text-secondary slide-in-left stagger-1 mt-3">Build skills with courses, certificates and degrees online.</p>
+        <form class="mt-4 slide-in-left stagger-2" action="{{ url_for('search') }}" method="get" role="search" aria-label="Search courses">
+          <div class="input-group input-group-lg" style="box-shadow: 0 10px 30px rgba(0,0,0,0.3); border-radius: 999px; overflow: hidden; border: 1px solid var(--border);">
+            <input name="q" type="search" class="form-control border-0 px-4" style="background: var(--glass);" placeholder="Search courses, topics, skills" aria-label="Search courses" autocomplete="off" spellcheck="false">
+            <button class="btn btn-primary px-4 fw-bold" type="submit">Search</button>
+          </div>
+        </form>
+        {% if popular_queries %}
+        <div class="mt-3 d-flex flex-wrap gap-2 slide-in-left stagger-3" aria-label="Popular searches">
+          {% for pq in popular_queries %}
+          <a class="btn btn-sm btn-outline-secondary rounded-pill js-popular-query" style="background: var(--glass); border-color: var(--border);" href="{{ url_for('search') }}?q={{ pq }}" data-q="{{ pq }}">{{ pq }}</a>
+          {% endfor %}
+        </div>
+        {% endif %}
+      </div>
+      <div class="col-lg-6 js-hero-right mt-5 mt-lg-0">
+        <div class="hero-card shadow-lg floaty zoom-in stagger-2" style="border: 1px solid var(--border); border-radius: 32px; box-shadow: 0 25px 50px rgba(0,0,0,0.5), 0 0 40px var(--primary-glow) !important;">
+          <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=1200&auto=format&fit=crop" class="img-fluid" style="border-radius: 32px;" alt="Students" loading="lazy">
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+{% if continue_learning %}
+<section id="continue" class="container py-5">
+  <h2 class="fw-bold mb-4 section-title slide-in-left">Continue learning</h2>
+  <div class="row g-4">
+    {% for item in continue_learning %}
+    {% set c = item.course %}
+    <div class="col-md-6 col-lg-4">
+      <div class="card glass h-100 p-3">
+        <div class="d-flex align-items-center gap-3">
+          <div class="ratio ratio-16x9" style="width:120px"><img src="{{ c.thumbnail }}" class="object-cover rounded-3" alt="" loading="lazy"></div>
+          <div class="flex-grow-1">
+            <a href="{{ url_for('course_detail', cid=c.id) }}" class="stretched-link text-reset"><h6 class="mb-1">{{ c.title }}</h6></a>
+            <div class="small text-secondary">{{ c.instructor }}</div>
+            <div class="mt-2">
+              <div class="progress" role="progressbar" aria-label="Progress" aria-valuemin="0" aria-valuemax="100" data-target="{{ item.pct }}">
+                <div class="progress-bar" style="width:0%"></div>
+              </div>
+              <div class="small text-secondary mt-1"><span class="pct">0</span>% complete</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+<section id="trending" class="container py-5">
+  <div class="d-flex justify-content-between align-items-end mb-4">
+    <h2 class="fw-bold section-title mb-0 slide-in-left">Trending Courses</h2>
+    <a href="#new" class="small">See new →</a>
+  </div>
+  <div class="row g-4">
+    {% for c in trending_courses %}
+    <div class="col-md-6 col-lg-4">
+      <div class="course-card h-100 pop-card">
+        <div class="ratio ratio-16x9"><img src="{{ c.thumbnail }}" class="object-cover rounded-top-4" alt="" loading="lazy"></div>
+        <div class="p-3">
+          <h5 class="mb-1"><a href="{{ url_for('course_detail', cid=c.id) }}" class="text-reset js-course-link">{{ c.title }}</a></h5>
+          <div class="small text-secondary">{{ c.instructor }}</div>
+          <div class="small mt-1">
+            {% set r = avg_ratings.get(c.id) %}
+            {% if r %}
+              <span title="Average rating">⭐ {{ '%.1f'|format(r.avg) }}</span>
+              <span class="text-secondary">({{ r.count }})</span>
+            {% else %}
+              <span class="text-secondary">No ratings yet</span>
+            {% endif %}
+          </div>
+          <div class="mt-1">
+            <span class="badge text-bg-secondary">${{ course_prices[c.id] }}</span>
+          </div>
+          <div class="mt-2 d-flex gap-2 align-items-center">
+            <a class="btn btn-sm btn-outline-primary rounded-pill" href="{{ url_for('course_detail', cid=c.id) }}">Details</a>
+            <a class="btn btn-sm btn-success rounded-pill" href="{{ url_for('checkout', cid=c.id) }}">Buy ${{ course_prices[c.id] }}</a>
+            {% if current_user.is_authenticated %}
+              <form method="post" action="{{ url_for('favorite_toggle', cid=c.id) }}">
+                <button class="btn btn-sm btn-outline-secondary rounded-pill" title="Toggle wishlist">{% if c.id in fav_ids %}♥{% else %}♡{% endif %}</button>
+              </form>
+              <form method="post" action="{{ url_for('cart_add', cid=c.id) }}">
+                <button class="btn btn-sm btn-outline-secondary rounded-pill">Add to Cart</button>
+              </form>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+
+<section id="categories" class="py-5" aria-label="Popular categories">
+  <div class="container">
+    <h2 class="fw-bold mb-4 section-title slide-in-left">Browse by category</h2>
+    <div class="d-flex flex-wrap gap-3 zoom-in stagger-1">
+      {% set cats = ['Python','Web Development','Design','Data Science','Machine Learning','DevOps','Business','Marketing'] %}
+      {% for cat in cats %}
+      <a class="btn btn-outline-secondary rounded-pill js-category px-4 py-2" style="background: var(--glass); border-color: var(--border);" href="{{ url_for('search') }}?q={{ cat }}" data-cat="{{ cat }}">{{ cat }}</a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section id="new" class="container py-5">
+  <h2 class="fw-bold mb-4 section-title slide-in-left">New & noteworthy</h2>
+  <div class="row g-4">
+    {% for c in new_courses %}
+    <div class="col-md-6 col-lg-4">
+      <div class="course-card h-100 pop-card">
+        <div class="ratio ratio-16x9"><img src="{{ c.thumbnail }}" class="object-cover rounded-top-4" alt="" loading="lazy"></div>
+        <div class="p-3">
+          <h5 class="mb-1"><a href="{{ url_for('course_detail', cid=c.id) }}" class="text-reset js-course-link">{{ c.title }}</a> <span class="badge text-bg-secondary">New</span></h5>
+          <div class="small text-secondary">{{ c.instructor }}</div>
+          <div class="small mt-1">
+            {% set r = avg_ratings.get(c.id) %}
+            {% if r %}
+              <span title="Average rating">⭐ {{ '%.1f'|format(r.avg) }}</span>
+              <span class="text-secondary">({{ r.count }})</span>
+            {% else %}
+              <span class="text-secondary">No ratings yet</span>
+            {% endif %}
+          </div>
+          <div class="mt-1">
+            <span class="badge text-bg-secondary">${{ course_prices[c.id] }}</span>
+          </div>
+          <div class="mt-2 d-flex gap-2 align-items-center">
+            <a class="btn btn-sm btn-outline-primary rounded-pill" href="{{ url_for('course_detail', cid=c.id) }}">Details</a>
+            <a class="btn btn-sm btn-success rounded-pill" href="{{ url_for('checkout', cid=c.id) }}">Buy ${{ course_prices[c.id] }}</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="py-5">
+  <div class="container">
+    <div class="row g-4">
+      <div class="col-md-4">
+        <div class="card glass p-4 h-100">
+          <h5 class="fw-bold mb-1">Flexible Learning</h5>
+          <p class="text-secondary mb-0">Self‑paced video lessons, quizzes, and lifetime access.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card glass p-4 h-100">
+          <h5 class="fw-bold mb-1">Expert Instructors</h5>
+          <p class="text-secondary mb-0">Courses authored by experienced practitioners.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card glass p-4 h-100">
+          <h5 class="fw-bold mb-1">Secure Checkout</h5>
+          <p class="text-secondary mb-0">Demo payment flow to simulate real purchases.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="instructors" class="container py-5 mb-4">
+  <div class="d-flex justify-content-between align-items-end mb-5 fade-up">
+    <div>
+      <h2 class="display-5 fw-bold mb-2 section-title">Featured Instructors</h2>
+      <p class="text-secondary mb-0">Learn from industry experts with real-world experience.</p>
+    </div>
+  </div>
+  <div class="row g-4 justify-content-center">
+    {% for ins in featured_instructors %}
+    <div class="col-md-6 col-lg-4 px-3 fade-up stagger-{{ loop.index }}">
+      <div class="card glass text-center p-5 h-100 pop-card position-relative overflow-hidden" style="border-radius: 24px; border: 1px solid var(--border-highlight);">
+        <!-- decorative blur circle behind avatar -->
+        <div class="position-absolute top-0 start-50 translate-middle-x mt-4" style="width: 120px; height: 120px; background: var(--primary-glow); filter: blur(50px); border-radius: 50%; opacity: 0.6; pointer-events: none;"></div>
+        
+        <div class="avatar bg-gradient text-white rounded-circle d-flex align-items-center justify-content-center mx-auto mb-4 position-relative shadow-sm" style="width:88px; height:88px; font-size: 2rem; background: linear-gradient(135deg, var(--primary), #ffa366); border: 2px solid rgba(255,255,255,0.2);">
+          {{ ins.name[:1] }}
+        </div>
+        
+        <h5 class="fw-bold mb-1">{{ ins.name }}</h5>
+        <div class="text-secondary small mb-4 fw-medium"><i class="fas fa-users me-2 text-primary" style="opacity: 0.8"></i>{{ ins.enrolls }} total enrollments</div>
+        
+        {% if ins.sample %}
+        <div class="p-3 mt-auto rounded-3 transition-transform" style="background: rgba(15, 23, 42, 0.04); border: 1px solid var(--border);">
+          <div class="text-secondary small text-uppercase fw-bold mb-1" style="font-size: 0.7rem; letter-spacing: 1px;">Popular Course</div>
+          <a class="text-reset text-decoration-none fw-semibold stretched-link js-course-link" href="{{ url_for('course_detail', cid=ins.sample.id) }}">{{ ins.sample.title }}</a>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+
+<section id="testimonials" class="py-5 overflow-hidden" aria-label="Testimonials and ratings">
+  <div class="container py-4 position-relative">
+    <!-- Decorative background aurora purely for testimonials section -->
+    <div class="position-absolute top-50 start-0 translate-middle opacity-25" style="width: 400px; height: 400px; background: var(--secondary-glow); filter: blur(100px); border-radius: 50%; z-index: -1;"></div>
+    
+    <div class="row g-5 align-items-center">
+      <div class="col-lg-5 slide-in-left">
+        <div class="pe-lg-4">
+          <div class="d-inline-flex align-items-center gap-2 px-4 py-2 rounded-pill mb-4" style="background: rgba(255,107,0,0.1); border: 1px solid var(--border-highlight); box-shadow: 0 4px 15px rgba(255,107,0,0.05);">
+            <i class="fas fa-star text-primary"></i> <span class="fw-bold text-primary">{{ '%.1f'|format(site_avg_rating) }} Average Rating</span>
+          </div>
+          <h2 class="display-5 fw-bold mb-4" style="letter-spacing: -1px;">Loved by learners worldwide</h2>
+          <p class="lead text-secondary mb-5" style="font-size: 1.15rem;">Join thousands of students who have advanced their careers and discovered new passions through EduLearn. Real, authentic feedback drives our quality.</p>
+          <div class="row g-4">
+            <div class="col-6">
+              <div class="display-5 fw-bold mb-1">{{ site_review_count }}+</div>
+              <div class="text-secondary small fw-bold text-uppercase" style="letter-spacing: 1px;">Verified Reviews</div>
+            </div>
+            <div class="col-6">
+              <div class="display-5 fw-bold mb-1">4.9/5</div>
+              <div class="text-secondary small fw-bold text-uppercase" style="letter-spacing: 1px;">Student Satisfaction</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-lg-7 slide-in-right position-relative">
+        <div class="row g-4">
+          {% for r in home_featured_reviews %}
+          <div class="col-md-6 {% if loop.index % 2 == 0 %}mt-md-5{% endif %}">
+            <div class="card glass p-4 h-100 pop-card shadow-sm" style="border-radius: 20px; border: 1px solid var(--border-highlight);">
+              <div class="d-flex gap-1 mb-3 text-primary" style="font-size: 0.9rem;">
+                {% for _ in range(r.rating) %}<i class="fas fa-star"></i>{% endfor %}
+              </div>
+              <p class="mb-4 text-secondary" style="font-size: 1.05rem; line-height: 1.6;">"{{ r.comment }}"</p>
+              <div class="d-flex align-items-center gap-3 mt-auto">
+                <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold text-primary" style="width: 42px; height: 42px; font-size: 1rem; background: rgba(255,107,0,0.1); border: 1px solid var(--border-highlight);">
+                  {{ r.user[:1] }}
+                </div>
+                <div class="fw-semibold">{{ r.user }}</div>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="newsletter" class="py-5 mt-4">
+  <div class="container">
+    <div class="card gradient p-5 position-relative overflow-hidden shadow-lg fade-up" style="border-radius: 32px; border: 1px solid var(--border-highlight);">
+      <div class="position-absolute top-50 translate-middle-y start-0 ms-4 text-white" style="opacity: 0.1;">
+        <i class="fas fa-paper-plane fa-10x" style="transform: rotate(15deg) translateY(10px);"></i>
+      </div>
+      <div class="row align-items-center position-relative z-1">
+        <div class="col-lg-6 mb-4 mb-lg-0 text-white">
+          <h2 class="display-6 fw-bold mb-2" style="letter-spacing: -1px;">Never miss an update</h2>
+          <p class="lead text-white opacity-75 mb-0" style="font-size: 1.1rem;">Get the latest courses, exclusive promotions, and learning tips delivered straight to your inbox.</p>
+        </div>
+        <div class="col-lg-6">
+          <form class="js-newsletter ms-lg-auto" style="max-width: 480px;" aria-label="Newsletter subscribe">
+            <div class="d-flex align-items-center" style="background: rgba(255,255,255,0.15); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.3); border-radius: 100px; padding: 6px;">
+              <span class="text-white opacity-75 ps-4 pe-2"><i class="fas fa-envelope"></i></span>
+              <input class="form-control bg-transparent border-0 text-white shadow-none px-2" style="font-size: 1rem;" type="email" name="email" placeholder="Enter your email address..." required aria-label="Email address">
+              <button class="btn btn-light rounded-pill px-4 fw-bold py-2" style="color: var(--primary); white-space: nowrap; box-shadow: 0 4px 15px rgba(0,0,0,0.1);" type="submit">Subscribe</button>
+            </div>
+            <div class="small mt-3 text-white opacity-75 ms-4 js-newsletter-success d-none"><i class="fas fa-check-circle me-1"></i>Thanks! You're on the list.</div>
+            <style>
+              .js-newsletter .form-control::placeholder { color: rgba(255, 255, 255, 0.6) !important; }
+            </style>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="faq" class="container py-5 mb-5">
+  <div class="text-center mb-5 fade-up">
+    <h2 class="display-5 fw-bold mb-2 section-title">Got Questions?</h2>
+    <p class="lead text-secondary">We've got answers. Find out everything you need to know about EduLearn.</p>
+  </div>
+  
+  <style>
+    /* Custom Premium Accordion Overrides */
+    #faqAcc .accordion-item {
+      background: var(--glass);
+      border: 1px solid var(--border);
+      border-radius: 20px !important;
+      overflow: hidden;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    #faqAcc .accordion-item:hover {
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      transform: translateY(-2px);
+    }
+    #faqAcc .accordion-button {
+      background-color: transparent;
+      color: var(--text-main);
+      box-shadow: none !important;
+      transition: color 0.3s ease;
+    }
+    #faqAcc .accordion-button:not(.collapsed) {
+      background-color: transparent;
+      color: var(--primary);
+    }
+    #faqAcc .accordion-body {
+      color: var(--text-muted) !important;
+    }
+    body[data-theme='light'] #faqAcc .accordion-item {
+      background: rgba(255, 255, 255, 0.7);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+    }
+    body[data-theme='light'] #faqAcc .accordion-button {
+      color: #0f172a;
+    }
+    body[data-theme='light'] #faqAcc .accordion-button:not(.collapsed) {
+      color: var(--primary);
+    }
+    body[data-theme='light'] #faqAcc .accordion-body {
+      color: #475569 !important;
+    }
+  </style>
+
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <div class="accordion accordion-flush d-flex flex-column gap-3" id="faqAcc">
+        <!-- FAQ Item 1 -->
+        <div class="accordion-item fade-up stagger-1 pop-card">
+          <h2 class="accordion-header" id="q1">
+            <button class="accordion-button fw-bold fs-5 p-4 pe-5" type="button" data-bs-toggle="collapse" data-bs-target="#a1" aria-expanded="true" aria-controls="a1">
+              How do certificates work?
+            </button>
+          </h2>
+          <div id="a1" class="accordion-collapse collapse show" aria-labelledby="q1" data-bs-parent="#faqAcc">
+            <div class="accordion-body px-4 pb-4 pt-0" style="font-size: 1.05rem; line-height: 1.6;">
+              Once you complete 100% of a course's curriculum (including all videos and quizzes), your official certificate of completion is automatically generated. You can download it as a PDF or share it directly to LinkedIn from your dashboard.
+            </div>
+          </div>
+        </div>
+        
+        <!-- FAQ Item 2 -->
+        <div class="accordion-item fade-up stagger-2 pop-card">
+          <h2 class="accordion-header" id="q2">
+            <button class="accordion-button collapsed fw-bold fs-5 p-4 pe-5" type="button" data-bs-toggle="collapse" data-bs-target="#a2" aria-expanded="false" aria-controls="a2">
+              Do you offer refunds?
+            </button>
+          </h2>
+          <div id="a2" class="accordion-collapse collapse" aria-labelledby="q2" data-bs-parent="#faqAcc">
+            <div class="accordion-body px-4 pb-4 pt-0" style="font-size: 1.05rem; line-height: 1.6;">
+              Yes! We want you to be completely satisfied with your learning experience. If a course isn't what you expected, you can request a full refund within 30 days of your purchase through your account settings.
+            </div>
+          </div>
+        </div>
+
+        <!-- FAQ Item 3 -->
+        <div class="accordion-item fade-up stagger-3 pop-card">
+          <h2 class="accordion-header" id="q3">
+            <button class="accordion-button collapsed fw-bold fs-5 p-4 pe-5" type="button" data-bs-toggle="collapse" data-bs-target="#a3" aria-expanded="false" aria-controls="a3">
+              Do I have lifetime access to the courses?
+            </button>
+          </h2>
+          <div id="a3" class="accordion-collapse collapse" aria-labelledby="q3" data-bs-parent="#faqAcc">
+            <div class="accordion-body px-4 pb-4 pt-0" style="font-size: 1.05rem; line-height: 1.6;">
+              Absolutely. Once you enroll in a course, you have permanent, lifetime access to all of its video resources, project files, and future updates. Learn at your own pace!
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% endblock %}

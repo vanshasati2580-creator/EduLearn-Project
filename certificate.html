@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="container py-5">
+  <div class="card p-4 p-lg-5">
+    <div class="text-center mb-4">
+      <h1 class="fw-bold">Certificate of Completion</h1>
+      <div class="text-secondary">EduLearn</div>
+    </div>
+    <p class="lead text-center">This certifies that</p>
+    <h2 class="text-center fw-bold">{{ student.name }}</h2>
+    <p class="lead text-center">has successfully completed the course</p>
+    <h3 class="text-center">"{{ course.title }}"</h3>
+    <p class="text-center mt-3">Date: {{ date.strftime('%Y-%m-%d') }}<br>Certificate ID: {{ cert_id }}</p>
+    <div class="text-center mt-4">
+      <button class="btn btn-primary rounded-pill" onclick="window.print()">Print Certificate</button>
+      <a class="btn btn-outline-secondary rounded-pill" href="{{ url_for('course_detail', cid=course.id) }}">Back to Course</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

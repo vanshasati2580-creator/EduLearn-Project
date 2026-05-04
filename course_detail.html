@@ -1,0 +1,540 @@
+{% extends "base.html" %}
+{% block extra_head %}
+<link rel="canonical" href="{{ canonical_url }}">
+<meta name="description" content="{{ course.short_desc|truncate(150, True) }}">
+<meta property="og:type" content="website">
+<meta property="og:title" content="{{ course.title }} | EduLearn">
+<meta property="og:description" content="{{ course.short_desc|truncate(180, True) }}">
+<meta property="og:image" content="{{ course.thumbnail }}">
+<meta property="og:url" content="{{ canonical_url }}">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Course",
+    "name": "{{ course.title|e }}",
+    "description": "{{ course.short_desc|e }}",
+    "provider": {"@type":"Organization","name":"EduLearn"},
+    "aggregateRating": {"@type":"AggregateRating","ratingValue":"{{ '%.1f'|format(avg_rating) }}","reviewCount":"{{ review_count }}"},
+    "offers": {"@type":"Offer","price":"{{ price_str }}","priceCurrency":"USD","availability":"InStock","url":"{{ canonical_url }}"}
+  }
+  </script>
+{% endblock %}
+{% block content %}
+<section class="container py-5">
+  <div class="row g-4">
+    <div class="col-lg-8 slide-in-left">
+      <div class="card glass p-5 course-hero" id="course-hero" data-canonical="{{ canonical_url }}" style="border-radius: 28px;">
+        <div class="hero-media ratio ratio-16x9 mb-3">
+          {% if preview_url %}
+          <iframe src="{{ preview_url }}" title="Free preview for {{ course.title }}"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowfullscreen loading="lazy"></iframe>
+          {% else %}
+          <img src="{{ course.thumbnail }}" alt="Preview for {{ course.title }}" class="object-cover w-100 h-100"
+            loading="lazy">
+          {% endif %}
+        </div>
+        <h1 class="fw-bold display-5 mb-1">{{ course.title }}</h1>
+        <div class="d-flex flex-wrap align-items-center gap-3 text-secondary small mb-3">
+          <span aria-label="Average rating">
+            ⭐ {{ '%.1f'|format(avg_rating) }}
+          </span>
+          <span>({{ review_count }} reviews)</span>
+          <span aria-hidden="true">•</span>
+          <span aria-label="Enrollment count">{{ enroll_count }} enrolled</span>
+          <span aria-hidden="true">•</span>
+          <span aria-label="Lessons count">{{ lessons|length }} lessons</span>
+          {% if quizzes|length %}
+          <span aria-hidden="true">•</span>
+          <span aria-label="Quizzes count">{{ quizzes|length }} quizzes</span>
+          {% endif %}
+          <span aria-hidden="true">•</span>
+          <span aria-label="Estimated duration">~ {{ (lessons|length * 8) }} min</span>
+        </div>
+        <div class="prose mb-3">{{ course.short_desc }}</div>
+        <div class="d-flex flex-wrap align-items-center gap-2">
+          {% if current_user.is_authenticated %}
+          <form class="d-inline" method="post" action="{{ url_for('favorite_toggle', cid=course.id) }}">
+            <button class="btn btn-sm btn-outline-secondary rounded-pill"
+              aria-pressed="{{ 'true' if user_fav else 'false' }}" aria-label="Toggle wishlist">
+              {% if user_fav %}♥ In wishlist{% else %}♡ Add to wishlist{% endif %}
+            </button>
+          </form>
+          <form class="d-inline" method="post" action="{{ url_for('cart_add', cid=course.id) }}">
+            <button class="btn btn-sm btn-outline-secondary rounded-pill">Add to Cart</button>
+          </form>
+          {% if enrolled %}
+          <a href="{{ url_for('certificate', cid=course.id) }}" class="btn btn-sm btn-outline-primary rounded-pill">Get
+            Certificate</a>
+          {% endif %}
+          {% endif %}
+          <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill js-share"
+            data-url="{{ canonical_url }}">Share</button>
+          {% if not enrolled and current_user.is_authenticated %}
+          <a class="btn btn-primary rounded-pill ms-auto" href="{{ url_for('checkout', cid=course.id) }}">Buy Now — ${{
+            price_str }}</a>
+          {% elif not current_user.is_authenticated and not enrolled %}
+          <a class="btn btn-primary rounded-pill ms-auto" href="{{ url_for('login') }}">Login to Buy</a>
+          {% else %}
+          <span class="badge text-bg-success rounded-pill ms-auto">Enrolled</span>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Premium Glass Tabs -->
+      <div class="d-flex overflow-auto pb-2 mb-4 mt-5 hide-scrollbar">
+        <ul class="nav nav-pills flex-nowrap gap-2 p-1 glass rounded-pill" id="tabs" role="tablist" style="border: 1px solid var(--border);">
+          <li class="nav-item" role="presentation">
+            <button class="nav-link active rounded-pill px-4 py-2 fw-semibold custom-tab-btn" data-bs-toggle="tab" data-bs-target="#tab-lessons" type="button">Lessons ({{ lessons|length }})</button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link rounded-pill px-4 py-2 fw-semibold custom-tab-btn" data-bs-toggle="tab" data-bs-target="#tab-about" type="button">About</button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link rounded-pill px-4 py-2 fw-semibold custom-tab-btn" data-bs-toggle="tab" data-bs-target="#tab-quizzes" type="button">Quizzes ({{ quizzes|length }})</button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link rounded-pill px-4 py-2 fw-semibold custom-tab-btn" data-bs-toggle="tab" data-bs-target="#tab-discuss" type="button">Discussion</button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link rounded-pill px-4 py-2 fw-semibold custom-tab-btn" data-bs-toggle="tab" data-bs-target="#tab-flashcards" type="button">Flashcards</button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link rounded-pill px-4 py-2 fw-semibold custom-tab-btn" data-bs-toggle="tab" data-bs-target="#tab-reviews" type="button">Reviews ({{ review_count }})</button>
+          </li>
+        </ul>
+      </div>
+
+      <div class="tab-content fade-up stagger-1">
+        <div class="tab-pane fade show active" id="tab-lessons">
+          <div class="accordion custom-accordion" id="curriculum">
+            {% for l in lessons %}
+            <div class="accordion-item glass border-0 mb-3 rounded-4 overflow-hidden shadow-sm transition-hover">
+              <h2 class="accordion-header" id="heading-{{ l.id }}">
+                <button class="accordion-button collapsed bg-transparent fw-bold px-4 py-3" type="button" data-bs-toggle="collapse"
+                  data-bs-target="#collapse-{{ l.id }}" aria-expanded="false" aria-controls="collapse-{{ l.id }}" style="box-shadow: none;">
+                  <span class="me-3 d-flex align-items-center justify-content-center rounded-circle bg-primary bg-opacity-10 text-primary" style="width: 32px; height: 32px; font-size: 0.85rem;">
+                    {% if enrolled and (l.position or 0) <= (progress_pos or 0) %}<i class="fa-solid fa-check"></i>{% else %}{{ loop.index }}{% endif %}
+                  </span>
+                  <span class="text-light-mode-dark">{{ l.title }}</span>
+                </button>
+              </h2>
+              <div id="collapse-{{ l.id }}" class="accordion-collapse collapse border-top border-light border-opacity-10" aria-labelledby="heading-{{ l.id }}"
+                data-bs-parent="#curriculum">
+                <div class="accordion-body px-4 py-3 bg-dark bg-opacity-10">
+                  <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                    <div class="text-secondary small d-flex align-items-center gap-2">
+                       <i class="fa-solid fa-book-open"></i> Lesson {{ loop.index }}
+                       {% if l.video_url %}<span class="badge bg-primary bg-opacity-10 text-primary ms-2"><i class="fa-brands fa-youtube me-1"></i> Video</span>{% endif %}
+                    </div>
+                    <a class="btn btn-primary rounded-pill px-4 shadow-sm"
+                      href="{{ url_for('lesson_view', lid=l.id) }}">Start Lesson</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        <div class="tab-pane fade" id="tab-quizzes">
+          <div class="card glass border-0 shadow-lg p-4 p-md-5 rounded-4">
+            <h4 class="fw-bold mb-4"><i class="fa-solid fa-clipboard-question text-primary me-2"></i> Course Quizzes</h4>
+            <div class="row g-3">
+              {% for q in quizzes %}
+              <div class="col-md-6 col-lg-4 fade-up">
+                <a class="text-decoration-none" href="{{ url_for('quiz_view', qid=q.id) }}">
+                  <div class="card bg-dark bg-opacity-10 border-light border-opacity-10 shadow-sm rounded-4 h-100 p-3 transition-hover d-flex flex-row align-items-center gap-3">
+                    <div class="avatar-circle bg-primary bg-opacity-25 text-primary rounded-circle d-flex align-items-center justify-content-center fw-bold shadow-sm" style="width: 48px; height: 48px; min-width: 48px;">
+                      <i class="fa-solid fa-file-pen"></i>
+                    </div>
+                    <div>
+                      <div class="fw-bold text-light-mode-dark mb-1" style="font-size: 1rem; line-height: 1.2;">{{ q.title }}</div>
+                      <div class="text-secondary small d-flex align-items-center gap-1">
+                        <i class="fa-solid fa-clock opacity-75"></i> ~{{ q.questions|length * 2 }} mins
+                      </div>
+                    </div>
+                  </div>
+                </a>
+              </div>
+              {% else %}
+              <div class="col-12 text-center py-5 text-secondary">
+                <i class="fa-solid fa-clipboard-question fa-3x opacity-50 mb-3"></i>
+                <p>No quizzes available for this course.</p>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+        <div class="tab-pane fade" id="tab-discuss">
+          <div class="card glass border-0 shadow-lg p-4 rounded-4 mb-4">
+            <h4 class="fw-bold mb-3"><i class="fa-solid fa-comments text-primary me-2"></i> Join the Discussion</h4>
+            <form method="post" action="{{ url_for('discuss', cid=course.id) }}">
+              <textarea class="form-control" name="content" rows="3" style="background: rgba(255,255,255,0.05); border-radius: 16px;" placeholder="Ask a question or share your thoughts..."></textarea>
+              <div class="text-end mt-3">
+                <button class="btn btn-primary rounded-pill px-4 shadow-sm">Post Message</button>
+              </div>
+            </form>
+          </div>
+          
+          <div class="d-flex flex-column gap-3">
+            {% for p in posts %}
+            <div class="card glass border-0 shadow-sm p-4 rounded-4 transition-hover">
+              <div class="d-flex align-items-center gap-3 mb-2">
+                <div class="avatar-circle bg-primary bg-opacity-25 text-primary rounded-circle d-flex align-items-center justify-content-center fw-bold" style="width:36px; height:36px;">
+                  {{ p.author[:1].upper() }}
+                </div>
+                <div>
+                  <div class="fw-bold text-light-mode-dark">{{ p.author }}</div>
+                  <div class="small text-secondary">{{ p.created_at.strftime('%b %d, %Y • %H:%M') }}</div>
+                </div>
+              </div>
+              <div class="text-light-mode-dark mt-2" style="font-size: 0.95rem;">{{ p.content }}</div>
+            </div>
+            {% else %}
+            <div class="card glass border-0 p-5 text-center rounded-4">
+              <i class="fa-regular fa-comments fa-3x text-secondary opacity-50 mb-3"></i>
+              <h5 class="text-light-mode-dark">Be the first to start a discussion!</h5>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        <div class="tab-pane fade" id="tab-flashcards">
+          <div class="card glass border-0 shadow-lg p-0 rounded-4 overflow-hidden">
+            <div id="flashcard-container" class="text-center py-5 position-relative">
+              <!-- Background decoration -->
+              <div class="position-absolute top-50 start-50 translate-middle w-100 h-100 opacity-25" style="background: radial-gradient(circle, var(--primary-glow) 0%, transparent 70%); pointer-events: none; z-index: 0;"></div>
+              
+              <div class="position-relative z-1">
+                <i class="fa-solid fa-layer-group fa-3x text-primary mb-3"></i>
+                <h4 class="fw-bold mb-4">Interactive Flashcards</h4>
+                <p class="text-secondary mb-4 px-3">Test your knowledge and reinforce key concepts with our built-in flashcard system.</p>
+                <button class="btn btn-primary btn-lg rounded-pill px-5 shadow-sm" id="start-flashcards">Start Review</button>
+              </div>
+
+              <div id="flashcard-ui" style="display:none;" class="position-relative z-1 px-3">
+                <div class="perspective-container d-flex justify-content-center">
+                  <div class="flashcard card border-0 shadow-lg"
+                    style="width:100%; max-width:550px; min-height:320px; cursor:pointer; background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.02)); backdrop-filter: blur(16px); border-radius: 20px; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.1);">
+                    <div class="card-body d-flex flex-column align-items-center justify-content-center p-5">
+                      <h6 class="text-primary text-uppercase fw-bold tracking-wide mb-4" id="fc-lesson-title">Lesson</h6>
+                      <h4 class="fw-bold text-light-mode-dark mb-5" id="fc-content" style="line-height: 1.5;">Question Text</h4>
+                      <div class="mt-auto d-flex align-items-center gap-2 text-secondary small bg-dark bg-opacity-25 px-3 py-1 rounded-pill">
+                        <i class="fa-solid fa-rotate"></i> <span id="fc-hint">Click to flip</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="d-flex justify-content-center align-items-center gap-4 mt-5">
+                  <button class="btn btn-outline-primary rounded-circle" style="width: 48px; height: 48px;" id="fc-prev" aria-label="Previous"><i class="fa-solid fa-chevron-left"></i></button>
+                  <span class="fs-5 fw-bold text-light-mode-dark" id="fc-counter" style="min-width: 60px;">1 / 10</span>
+                  <button class="btn btn-outline-primary rounded-circle" style="width: 48px; height: 48px;" id="fc-next" aria-label="Next"><i class="fa-solid fa-chevron-right"></i></button>
+                </div>
+              </div>
+            </div>
+            
+            <script>
+              document.addEventListener('DOMContentLoaded', () => {
+                const startBtn = document.getElementById('start-flashcards');
+                const ui = document.getElementById('flashcard-ui');
+                const cardEl = document.querySelector('.flashcard');
+                const contentEl = document.getElementById('fc-content');
+                const lessonEl = document.getElementById('fc-lesson-title');
+                const counterEl = document.getElementById('fc-counter');
+                const hintEl = document.getElementById('fc-hint');
+
+                let cards = [];
+                let currentIndex = 0;
+                let isFlipped = false;
+
+                if (startBtn) {
+                  startBtn.addEventListener('click', () => {
+                    fetch('/api/flashcards/{{ course.id }}')
+                      .then(r => r.json())
+                      .then(data => {
+                        cards = data.cards || [];
+                        if (cards.length === 0) {
+                          alert('No flashcards available for this course yet.');
+                          return;
+                        }
+                        startBtn.parentElement.style.display = 'none';
+                        ui.style.display = 'block';
+                        currentIndex = 0;
+                        showCard();
+                      });
+                  });
+                }
+
+                function showCard() {
+                  if (!cards.length) return;
+                  const c = cards[currentIndex];
+                  isFlipped = false;
+                  contentEl.innerText = c.front;
+                  lessonEl.innerText = c.lesson;
+                  hintEl.innerText = "Click to flip";
+                  counterEl.innerText = `${currentIndex + 1} / ${cards.length}`;
+                  cardEl.classList.remove('flipped'); 
+                }
+
+                if (cardEl) {
+                  cardEl.addEventListener('click', () => {
+                    if (!cards.length) return;
+
+                    cardEl.classList.add('flipped-anim');
+
+                    setTimeout(() => {
+                      const c = cards[currentIndex];
+                      isFlipped = !isFlipped;
+                      if (isFlipped) {
+                        contentEl.innerText = c.back;
+                        hintEl.innerText = "Click to see question";
+                      } else {
+                        contentEl.innerText = c.front;
+                        hintEl.innerText = "Click to see answer";
+                      }
+                    }, 200);
+
+                    setTimeout(() => {
+                      cardEl.classList.remove('flipped-anim');
+                    }, 400);
+                  });
+                }
+
+                const nextBtn = document.getElementById('fc-next');
+                if (nextBtn) {
+                  nextBtn.addEventListener('click', () => {
+                    if (currentIndex < cards.length - 1) {
+                      currentIndex++;
+                      showCard();
+                    }
+                  });
+                }
+
+                const prevBtn = document.getElementById('fc-prev');
+                if (prevBtn) {
+                  prevBtn.addEventListener('click', () => {
+                    if (currentIndex > 0) {
+                      currentIndex--;
+                      showCard();
+                    }
+                  });
+                }
+              });
+            </script>
+          </div>
+        </div>
+        <div class="tab-pane fade" id="tab-reviews">
+          <div class="card glass border-0 shadow-lg p-4 p-md-5 rounded-4">
+            <!-- Ratings summary -->
+            <div class="row g-4 align-items-center border-bottom border-light border-opacity-10 pb-4 mb-4">
+              <div class="col-md-4 text-center text-md-start">
+                <h4 class="fw-bold"><i class="fa-solid fa-star text-warning me-2"></i> Student Feedback</h4>
+                <div class="display-4 fw-bold text-light-mode-dark mt-3">{{ '%.1f'|format(avg_rating) }}</div>
+                <div class="text-warning fs-5">
+                   {% for star in [1,2,3,4,5] %}
+                     {% if avg_rating >= star %}<i class="fa-solid fa-star"></i>
+                     {% elif avg_rating >= star - 0.5 %}<i class="fa-solid fa-star-half-stroke"></i>
+                     {% else %}<i class="fa-regular fa-star"></i>{% endif %}
+                   {% endfor %}
+                </div>
+                <div class="text-secondary small mt-1">based on {{ review_count }} reviews</div>
+              </div>
+              <div class="col-md-8">
+                {% for star in [5,4,3,2,1] %}
+                {% set count = rating_breakdown.get(star, 0) %}
+                {% set pct = (count / (review_count or 1) * 100) | round(0, 'floor') %}
+                <div class="d-flex align-items-center gap-3 mb-2">
+                  <span class="small fw-semibold text-secondary" style="width: 40px">{{ star }} <i class="fa-solid fa-star text-warning small"></i></span>
+                  <div class="progress flex-grow-1 rating-bar" data-pct="{{ pct }}" role="progressbar" aria-label="{{ star }} star count" style="height: 8px; background: rgba(255,255,255,0.05);">
+                    <div class="progress-animated bg-warning rounded-pill"></div>
+                  </div>
+                  <span class="small text-secondary" style="width: 40px; text-align:right">{{ pct }}%</span>
+                </div>
+                {% endfor %}
+              </div>
+            </div>
+
+            <!-- Featured reviews -->
+            {% if featured_reviews %}
+            <div class="mb-5">
+              <h5 class="fw-bold mb-3">Featured Highlights</h5>
+              <div class="row g-3">
+                {% for fr in featured_reviews %}
+                <div class="col-md-6">
+                  <div class="card bg-dark bg-opacity-25 border-0 p-3 h-100 rounded-4 fade-up">
+                    <div class="d-flex justify-content-between mb-2">
+                      <div class="text-warning small">
+                        {% for i in range(fr.rating) %}<i class="fa-solid fa-star"></i>{% endfor %}
+                      </div>
+                      <div class="text-secondary small" style="font-size: 0.8rem;">{{ fr.created_at.strftime('%b %d, %Y') }}</div>
+                    </div>
+                    <div class="text-light-mode-dark fst-italic" style="font-size: 0.95rem;">"{{ fr.comment }}"</div>
+                  </div>
+                </div>
+                {% endfor %}
+              </div>
+            </div>
+            {% endif %}
+
+            <h5 class="fw-bold mb-3 border-bottom border-light border-opacity-10 pb-2">All Reviews</h5>
+            {% if current_user.is_authenticated and enrolled %}
+            <div class="bg-primary bg-opacity-10 p-4 rounded-4 mb-4">
+              <form method="post" action="{{ url_for('add_review', cid=course.id) }}">
+                <div class="d-flex flex-wrap align-items-center gap-3 mb-3">
+                  <label class="form-label fw-bold text-primary mb-0">Rate your experience</label>
+                  <select class="form-select bg-transparent border-primary text-primary" name="rating" style="width: auto;">
+                    {% for n in [5,4,3,2,1] %}
+                    <option value="{{ n }}" class="text-dark">{{ n }} Stars</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <textarea class="form-control" name="comment" rows="3" style="background: rgba(255,255,255,0.05); border-radius: 12px; border-color: rgba(255,255,255,0.1);" placeholder="Tell us what you loved or what could be improved..."></textarea>
+                <div class="text-end mt-3">
+                  <button class="btn btn-primary rounded-pill px-4 shadow-sm">Submit Review</button>
+                </div>
+              </form>
+            </div>
+            {% endif %}
+            
+            <div class="d-flex flex-column gap-3">
+              {% for r in reviews %}
+              <div class="p-3 bg-dark bg-opacity-10 rounded-4">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <div class="text-warning small">
+                    {% for i in range(r.rating) %}<i class="fa-solid fa-star"></i>{% endfor %}
+                  </div>
+                  <div class="small text-secondary">{{ r.created_at.strftime('%b %d, %Y') }}</div>
+                </div>
+                <div class="text-light-mode-dark">{{ r.comment }}</div>
+              </div>
+              {% else %}
+              <div class="text-center py-4 text-secondary">No reviews have been posted yet.</div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+        
+        <div class="tab-pane fade" id="tab-about">
+          <div class="card glass border-0 shadow-lg p-4 p-md-5 rounded-4">
+            <h4 class="fw-bold mb-4"><i class="fa-solid fa-circle-info text-primary me-2"></i> About this course</h4>
+            <div class="prose text-light-mode-dark fs-6" style="line-height: 1.8;">
+              {{ course.long_desc | replace('\n','<br>') | safe }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-4 slide-in-right">
+      <div class="card gradient p-4 text-white" style="border-radius: 24px;">
+        <h5 class="fw-bold">Course includes</h5>
+        <ul class="mb-2">
+          <li>{{ lessons|length }} lessons</li>
+          <li>{{ quizzes|length }} quizzes</li>
+          <li>Approx. {{ (lessons|length * 8) }} min content</li>
+          <li>Certificate of completion</li>
+          <li>Lifetime access</li>
+        </ul>
+        <div class="small opacity-75 mb-2">By {{ course.instructor }} • {{ enroll_count }} enrolled</div>
+        {% if not enrolled %}
+        <div class="input-group input-group-sm mb-2">
+          <input type="text" class="form-control" placeholder="Coupon code" aria-label="Coupon code">
+          <button class="btn btn-outline-light js-apply-coupon"
+            data-checkout-base="{{ url_for('checkout', cid=course.id) }}">Apply</button>
+        </div>
+        <div class="d-flex justify-content-between align-items-center">
+          <span class="opacity-75">Price</span>
+          <span class="fw-bold">${{ price_str }}</span>
+        </div>
+        <div class="d-grid mt-2">
+          <a class="btn btn-light rounded-pill" href="{{ url_for('checkout', cid=course.id) }}">Buy Now</a>
+        </div>
+        {% else %}
+        <a class="btn btn-outline-light rounded-pill w-100" href="{{ url_for('certificate', cid=course.id) }}">View
+          Certificate</a>
+        {% endif %}
+      </div>
+
+      <div class="card glass p-3 mt-3">
+        <h6 class="fw-bold mb-2">What people are discussing</h6>
+        {% for p in posts[:2] %}
+        <div class="mb-2 small text-secondary">{{ p.author }} • {{ p.created_at.strftime('%Y-%m-%d') }}</div>
+        <div class="mb-2">{{ p.content }}</div>
+        {% if not loop.last %}
+        <hr class="my-2">{% endif %}
+        {% else %}
+        <div class="text-secondary small">No posts yet.</div>
+        {% endfor %}
+        <a class="small link-light" href="#tab-discuss" data-bs-toggle="tab">Go to discussion →</a>
+      </div>
+
+      <div class="card glass p-3 mt-3">
+        <div class="d-flex align-items-center gap-3">
+          <div class="avatar bg-primary text-white rounded-circle d-flex align-items-center justify-content-center"
+            style="width:48px;height:48px">{{ course.instructor[:1] }}</div>
+          <div>
+            <div class="fw-bold">Instructor</div>
+            <div class="text-secondary">{{ course.instructor }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% if related_courses %}
+<section class="container pb-5">
+  <h3 class="section-title mb-3">Related courses</h3>
+  <div class="row g-3">
+    {% for rc in related_courses %}
+    <div class="col-md-6 col-lg-4">
+      <a class="text-decoration-none" href="{{ url_for('course_detail', cid=rc.id) }}"
+        aria-label="Open related course {{ rc.title }}">
+        <div class="pop-card h-100">
+          <img src="{{ rc.thumbnail }}" alt="{{ rc.title }}" class="object-cover w-100" style="height:160px"
+            loading="lazy">
+          <div class="p-3">
+            <div class="fw-bold mb-1">{{ rc.title }}</div>
+            <div class="d-flex justify-content-between align-items-center text-secondary small">
+              <span>By {{ rc.instructor }}</span>
+              <span class="text-white fw-bold">${{ related_prices.get(rc.id) }}</span>
+            </div>
+          </div>
+        </div>
+      </a>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+<!-- Sticky CTA -->
+<div class="sticky-cta js-sticky-cta" aria-hidden="true">
+  <div class="container d-flex flex-wrap gap-2 justify-content-between align-items-center">
+    <div class="d-flex align-items-center gap-3 small text-secondary">
+      <strong class="text-white">{{ course.title }}</strong>
+      <span>⭐ {{ '%.1f'|format(avg_rating) }} ({{ review_count }})</span>
+    </div>
+    {% if not enrolled %}
+    <div class="d-flex flex-wrap align-items-center gap-2">
+      <div class="input-group input-group-sm">
+        <input class="form-control coupon-input" placeholder="Coupon code" aria-label="Coupon code" maxlength="40">
+        <button class="btn btn-outline-light js-apply-coupon"
+          data-checkout-base="{{ url_for('checkout', cid=course.id) }}">Apply</button>
+      </div>
+      <form class="d-inline" method="post" action="{{ url_for('cart_add', cid=course.id) }}">
+        <button class="btn btn-outline-light rounded-pill">Add to Cart</button>
+      </form>
+      <a class="btn btn-primary rounded-pill" href="{{ url_for('checkout', cid=course.id) }}">Buy Now — ${{ price_str
+        }}</a>
+    </div>
+    {% else %}
+    <a class="btn btn-success rounded-pill"
+      href="{{ url_for('lesson_view', lid=lessons[0].id) if lessons else '#' }}">Continue learning</a>
+    {% endif %}
+  </div>
+</div>
+
+{% if enrolled %}
+{% include '_chat_widget.html' %}
+{% endif %}
+{% endblock %}

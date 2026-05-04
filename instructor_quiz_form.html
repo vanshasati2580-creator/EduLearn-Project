@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="container py-5">
+  {% set is_edit = quiz is not none %}
+  <div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+      <h2 class="fw-bold mb-0">{{ 'Edit Quiz' if is_edit else 'New Quiz' }}</h2>
+      <div class="text-secondary">Course: {{ course.title }}</div>
+    </div>
+    <a href="{{ request.args.get('back') or url_for('instructor_quizzes', cid=course.id) }}" class="btn btn-outline-secondary rounded-pill">Back</a>
+  </div>
+
+  <div class="card glass p-4">
+    <form method="post" action="{{ (url_for('instructor_quiz_edit', qid=quiz.id, back=request.args.get('back')) if is_edit else url_for('instructor_quiz_new', cid=course.id, back=request.args.get('back'))) }}">
+      <div class="row g-3">
+        <div class="col-12">
+          <label class="form-label">Title</label>
+          <input class="form-control form-control-lg" name="title" type="text" placeholder="Quiz title" value="{{ quiz.title if is_edit else '' }}" required>
+        </div>
+      </div>
+      <div class="d-flex gap-2 mt-4">
+        <button class="btn btn-primary rounded-pill">{{ 'Save Changes' if is_edit else 'Create Quiz' }}</button>
+        <a href="{{ request.args.get('back') or url_for('instructor_quizzes', cid=course.id) }}" class="btn btn-outline-secondary rounded-pill">Cancel</a>
+      </div>
+    </form>
+  </div>
+</section>
+{% endblock %}

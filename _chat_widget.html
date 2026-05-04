@@ -1,0 +1,167 @@
+<!-- AI Study Buddy Widget -->
+<div class="chat-widget position-fixed bottom-0 end-0 m-4 z-3" style="width: 380px;">
+    <div class="card glass border-0 rounded-5 overflow-hidden mb-3 pop-card" id="chatCard" style="display: none; height: 500px; box-shadow: 0 15px 35px rgba(0,0,0,0.2) !important;">
+        <!-- Header -->
+        <div class="card-header border-0 bg-dark bg-opacity-25 border-bottom border-light border-opacity-10 d-flex justify-content-between align-items-center p-3 px-4">
+            <div class="d-flex align-items-center gap-3">
+                <div class="avatar-circle bg-primary bg-opacity-25 text-primary rounded-circle d-flex align-items-center justify-content-center fw-bold shadow-sm" style="width: 40px; height: 40px;">
+                  <i class="fa-solid fa-robot"></i>
+                </div>
+                <div>
+                  <h6 class="mb-0 fw-bold text-light-mode-dark">AI Study Buddy</h6>
+                  <div class="small fw-semibold text-primary d-flex align-items-center gap-1" style="font-size: 0.75rem;">
+                    <span class="spinner-grow bg-success" style="width: 6px; height: 6px;" aria-hidden="true"></span> Online
+                  </div>
+                </div>
+            </div>
+            <button type="button" class="btn-close js-toggle-chat pb-2" aria-label="Close" style="filter: var(--bs-btn-close-filter);"></button>
+        </div>
+        
+        <!-- Chat Area -->
+        <div class="card-body p-4 overflow-auto hide-scrollbar" id="chatBox" style="background: transparent;">
+            <div class="d-flex mb-4">
+                <div class="d-flex flex-column align-items-start" style="max-width: 85%;">
+                    <div class="bg-primary bg-opacity-10 text-light-mode-dark p-3 rounded-4 shadow-sm position-relative" style="border-top-left-radius: 4px !important; font-size: 0.95rem; border: 1px solid rgba(255,255,255,0.05);">
+                        Hi! I'm your AI Study Buddy for <strong class="text-primary">{{ course.title }}</strong>. Ask me anything about the lessons!
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Input Area -->
+        <div class="card-footer bg-transparent border-top border-light border-opacity-10 p-3 px-4">
+            <div class="input-group shadow-sm rounded-pill overflow-hidden" style="background: rgba(255,255,255,0.05); border: 1px solid var(--border);">
+                <input type="text" id="chatInput" class="form-control border-0 bg-transparent text-light-mode-dark ps-4 py-3" placeholder="Ask a question..." autocomplete="off" style="box-shadow: none;">
+                <button class="btn btn-primary px-4 fw-bold js-send-chat" type="button" style="border: none;">
+                    <i class="fa-solid fa-paper-plane"></i>
+                </button>
+            </div>
+            <div class="text-center mt-2">
+                <span style="font-size: 0.7rem;" class="text-secondary opacity-75">AI may produce inaccurate information</span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Floating Action Button -->
+    <div class="d-flex justify-content-end floaty">
+        <div class="position-relative" style="width: 64px; height: 64px;">
+            <!-- Glow effect behind button -->
+            <div class="position-absolute top-50 start-50 translate-middle rounded-circle bg-primary opacity-50 pe-none" style="width: 64px; height: 64px; filter: blur(20px); z-index: 0;"></div>
+            <button class="btn btn-primary rounded-circle p-0 js-toggle-chat d-flex justify-content-center align-items-center transition-hover position-relative z-1 w-100 h-100" style="border: 2px solid rgba(255,255,255,0.2); box-shadow: 0 10px 25px var(--primary-glow) !important;" title="Chat with AI Buddy">
+                <i class="fa-solid fa-robot fa-xl text-white" id="chatIcon"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const chatCard = document.getElementById('chatCard');
+        const toggles = document.querySelectorAll('.js-toggle-chat');
+        const chatIcon = document.getElementById('chatIcon');
+        const sendBtn = document.querySelector('.js-send-chat');
+        const chatInput = document.getElementById('chatInput');
+        const chatBox = document.getElementById('chatBox');
+
+        toggles.forEach(btn => {
+            btn.addEventListener('click', () => {
+                if (chatCard.style.display === 'none') {
+                    chatCard.style.display = 'flex';
+                    chatCard.classList.add('flex-column');
+                    chatIcon.classList.remove('fa-robot');
+                    chatIcon.classList.add('fa-xmark');
+                    chatInput.focus();
+                } else {
+                    chatCard.style.display = 'none';
+                    chatCard.classList.remove('flex-column');
+                    chatIcon.classList.remove('fa-xmark');
+                    chatIcon.classList.add('fa-robot');
+                }
+            });
+        });
+
+        const appendMessage = (msg, isUser) => {
+            const div = document.createElement('div');
+            div.className = `d-flex mb-4 slide-in-${isUser ? 'right' : 'left'} ${isUser ? 'justify-content-end' : 'justify-content-start'}`;
+            
+            let bubbleClass = isUser 
+              ? 'bg-primary text-white p-3 rounded-4 shadow-sm' 
+              : 'bg-primary bg-opacity-10 text-light-mode-dark p-3 rounded-4 shadow-sm';
+            let borderStyle = isUser
+              ? 'border-top-right-radius: 4px !important;'
+              : 'border-top-left-radius: 4px !important; border: 1px solid rgba(255,255,255,0.05);';
+              
+            div.innerHTML = `
+            <div class="d-flex flex-column ${isUser ? 'align-items-end' : 'align-items-start'}" style="max-width: 85%;">
+                <div class="${bubbleClass}" style="${borderStyle} font-size: 0.95rem; word-wrap: break-word;">
+                    ${msg.replace(/\n/g, '<br>')}
+                </div>
+            </div>
+            `;
+            chatBox.appendChild(div);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        };
+
+        const sendMessage = async () => {
+            const msg = chatInput.value.trim();
+            if (!msg) return;
+
+            appendMessage(msg, true);
+            chatInput.value = '';
+            chatInput.disabled = true;
+            sendBtn.disabled = true;
+
+            // Typing indicator
+            const typingId = 'typing-' + Date.now();
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'd-flex mb-4 justify-content-start slide-in-left';
+            typingDiv.id = typingId;
+            typingDiv.innerHTML = `
+            <div class="d-flex flex-column align-items-start" style="max-width: 85%;">
+                <div class="bg-primary bg-opacity-10 p-3 rounded-4 shadow-sm" style="border-top-left-radius: 4px !important; border: 1px solid rgba(255,255,255,0.05);">
+                    <div class="d-flex gap-1 align-items-center" style="height: 20px;">
+                        <span class="spinner-grow spinner-grow-sm text-primary" style="width: 6px; height: 6px;" role="status" aria-hidden="true"></span>
+                        <span class="spinner-grow spinner-grow-sm text-primary" style="width: 6px; height: 6px; animation-delay: 0.2s;" role="status" aria-hidden="true"></span>
+                        <span class="spinner-grow spinner-grow-sm text-primary" style="width: 6px; height: 6px; animation-delay: 0.4s;" role="status" aria-hidden="true"></span>
+                    </div>
+                </div>
+            </div>`;
+            chatBox.appendChild(typingDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            try {
+                const res = await fetch('/api/chat/{{ course.id }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ message: msg })
+                });
+                const data = await res.json();
+
+                document.getElementById(typingId).remove();
+
+                if (data.reply) {
+                    appendMessage(data.reply, false);
+                } else {
+                    appendMessage("Sorry, I didn't understand that.", false);
+                }
+            } catch (e) {
+                document.getElementById(typingId).remove();
+                appendMessage("Error communicating with AI.", false);
+            }
+
+            chatInput.disabled = false;
+            sendBtn.disabled = false;
+            chatInput.focus();
+        };
+
+        sendBtn.addEventListener('click', sendMessage);
+        chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+    });
+</script>

@@ -1,0 +1,165 @@
+{% extends 'base.html' %}
+{% block title %}AI Mock Test: {{ lesson.title }}{% endblock %}
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow border-0 feature-card mb-4 mt-5">
+                <div class="card-body p-4 p-md-5">
+                    <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
+                        <div>
+                            <span class="badge bg-primary text-uppercase mb-2">Practice</span>
+                            <h2 class="fw-bold mb-0">AI Mock Test</h2>
+                            <p class="text-muted mb-0">Based on: {{ lesson.title }}</p>
+                        </div>
+                        <i class="fa-solid fa-brain fa-3x text-light"></i>
+                    </div>
+
+                    <form id="mockTestForm" onsubmit="return false;">
+                        {% for q in questions %}
+                        <div class="mb-5 question-block">
+                            <h5 class="fw-bold mb-4">
+                                <span class="text-primary me-2">{{ loop.index }}.</span>
+                                {{ q.text }}
+                            </h5>
+                            <div class="row g-3">
+                                {% for opt, val in [('A', q.option_a), ('B', q.option_b), ('C', q.option_c), ('D',
+                                q.option_d)] %}
+                                <div class="col-12">
+                                    <input type="radio" class="btn-check" name="question_{{ loop.index0 }}"
+                                        id="q_{{ loop.index0 }}_{{ opt }}" value="{{ opt }}" required>
+                                    <label
+                                        class="btn btn-outline-secondary w-100 text-start rounded-pill px-4 py-3 d-flex align-items-center option-label"
+                                        for="q_{{ loop.index0 }}_{{ opt }}" data-correct="{{ q.correct }}">
+                                        <div class="fw-bold me-3 text-secondary option-letter">{{ opt }}</div>
+                                        <div>{{ val }}</div>
+                                        <i class="fa-solid ms-auto result-icon d-none"></i>
+                                    </label>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endfor %}
+
+                        <div class="mt-5 pt-3 border-top text-end" id="submitAction">
+                            <button type="submit" class="btn btn-primary rounded-pill px-5 py-2 fw-bold w-100"
+                                id="submitMockTest">Check Answers</button>
+                        </div>
+                    </form>
+
+                    <div id="resultSummary" class="mt-4 text-center d-none">
+                        <h4 class="fw-bold" id="scoreText"></h4>
+                        <p class="text-muted mb-4">Great job actively recalling the material! The more you practice, the
+                            more you learn.</p>
+                        <div class="d-flex gap-2 justify-content-center">
+                            <a href="{{ url_for('lesson_view', lid=lesson.id) }}"
+                                class="btn btn-outline-primary rounded-pill px-4">Back to Lesson</a>
+                            <a href="" class="btn btn-primary rounded-pill px-4" id="retryMockTest">Generate Another</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .input-group:focus-within {
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    }
+
+    .option-label {
+        transition: all 0.2s ease;
+        border-width: 2px !important;
+    }
+
+    .btn-check:checked+.option-label {
+        background-color: #eef2ff !important;
+        border-color: #0d6efd !important;
+        color: #212529 !important;
+    }
+
+    .btn-check:checked+.option-label .option-letter {
+        color: #0d6efd !important;
+    }
+
+    .option-label.correct {
+        background-color: #ecfdf5 !important;
+        border-color: #10b981 !important;
+        color: #065f46 !important;
+    }
+
+    .option-label.correct .option-letter,
+    .option-label.correct .fa-solid {
+        color: #10b981 !important;
+    }
+
+    .option-label.incorrect {
+        background-color: #fef2f2 !important;
+        border-color: #ef4444 !important;
+        color: #991b1b !important;
+    }
+
+    .option-label.incorrect .option-letter,
+    .option-label.incorrect .fa-solid {
+        color: #ef4444 !important;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const form = document.getElementById('mockTestForm');
+        const submitBtn = document.getElementById('submitMockTest');
+        const resultSummary = document.getElementById('resultSummary');
+        const scoreText = document.getElementById('scoreText');
+        const submitAction = document.getElementById('submitAction');
+
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            // validate
+            const radios = form.querySelectorAll('input[type="radio"]:checked');
+            const total = {{ questions| length
+        }};
+    if (radios.length < total) {
+        alert('Please answer all questions before submitting.');
+        return;
+    }
+
+    let score = 0;
+
+    // Evaluate
+    const allQuestions = document.querySelectorAll('.question-block');
+    allQuestions.forEach((qBlock, idx) => {
+        const inputs = qBlock.querySelectorAll('input[type="radio"]');
+        inputs.forEach(input => {
+            input.disabled = true; // prevent changing
+            const label = qBlock.querySelector(`label[for="${input.id}"]`);
+            const correctAns = label.dataset.correct;
+            const icon = label.querySelector('.result-icon');
+
+            if (input.value === correctAns) {
+                label.classList.add('correct');
+                icon.classList.add('fa-check');
+                icon.classList.remove('d-none');
+            }
+
+            if (input.checked) {
+                if (input.value === correctAns) {
+                    score++;
+                } else {
+                    label.classList.add('incorrect');
+                    icon.classList.add('fa-xmark');
+                    icon.classList.remove('d-none');
+                }
+            }
+        });
+    });
+
+    scoreText.innerHTML = `You scored <span class="${score === total ? 'text-success' : 'text-primary'}">${score} out of ${total}</span>!`;
+    submitAction.classList.add('d-none');
+    resultSummary.classList.remove('d-none');
+    });
+});
+</script>
+{% endblock %}

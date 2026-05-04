@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% block title %}Personalized Refresher{% endblock %}
+{% block content %}
+<div class="container py-5 mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="text-center mb-5 fade-up">
+                <div class="d-inline-flex align-items-center justify-content-center rounded-circle bg-primary bg-opacity-10 text-primary mb-3" style="width: 80px; height: 80px;">
+                    <i class="fa-solid fa-wand-magic-sparkles fa-2x"></i>
+                </div>
+                <h1 class="fw-bold mb-3">Your Personalized Refresher</h1>
+                <p class="lead text-secondary px-md-5">
+                    You scored <strong class="text-primary">{{ attempt.score }}/{{ attempt.total }}</strong> on the <strong>{{ quiz.title }}</strong> quiz. 
+                    We've synthesized a quick, tailored review guide to help you master these concepts!
+                </p>
+            </div>
+
+            <div class="card glass border-0 shadow-lg p-4 p-md-5 mb-5 fade-up" style="animation-delay: 0.1s;">
+                <h4 class="fw-bold mb-4 border-bottom border-secondary border-opacity-25 pb-3">
+                    <i class="fa-solid fa-book-open text-primary me-2"></i> Understanding the Concepts
+                </h4>
+                <div class="refresher-content fs-5" style="line-height: 1.8;" id="aiContent">
+                    {{ suggestion.content | replace('\n', '<br>') | safe }}
+                </div>
+            </div>
+            
+            <div class="text-center fade-up" style="animation-delay: 0.2s;">
+                <a href="{{ url_for('course_detail', cid=course.id) }}" class="btn btn-primary btn-lg rounded-pill px-5 shadow-sm">
+                    <i class="fa-solid fa-arrow-left me-2"></i> Return to Course
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Find the AI text content block
+        let contentDiv = document.getElementById("aiContent");
+        if (contentDiv) {
+            // Replace **text** with <strong>text</strong>
+            let html = contentDiv.innerHTML;
+            html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            contentDiv.innerHTML = html;
+        }
+    });
+</script>
+
+<style>
+    .refresher-content p {
+        margin-bottom: 1.5rem;
+    }
+    .refresher-content strong, .refresher-content b {
+        color: var(--bs-primary);
+        font-weight: 600;
+    }
+</style>
+{% endblock %}

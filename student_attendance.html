@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="container py-5">
+  <div class="d-flex align-items-center justify-content-between mb-4">
+    <h2 class="fw-bold">My Attendance</h2>
+    <div class="badge bg-primary-subtle text-primary rounded-pill p-2 px-3">
+      Threshold: {{ threshold }}%
+    </div>
+  </div>
+
+  <div class="row g-4">
+    {% for data in attendance_data %}
+    <div class="col-md-6">
+      <div class="card glass border-0 shadow-sm p-4 h-100 pop-card">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+          <h5 class="fw-bold mb-0 text-truncate me-3">{{ data.course.title }}</h5>
+          <span class="badge {% if data.below_threshold %}bg-danger{% else %}bg-success{% endif %} rounded-pill">
+            {{ data.percentage }}%
+          </span>
+        </div>
+        
+        <div class="progress rounded-pill bg-dark-subtle mb-3" style="height: 12px;">
+          <div class="progress-bar rounded-pill {% if data.below_threshold %}bg-danger{% else %}bg-success{% endif %}" role="progressbar" style="width: {{ data.percentage }}%" aria-valuenow="{{ data.percentage }}" aria-valuemin="0" aria-valuemax="100"></div>
+        </div>
+        
+        <div class="row g-2 text-center small mt-auto">
+          <div class="col-4 border-end">
+            <div class="text-secondary">Present</div>
+            <div class="fw-bold text-success">{{ data.attended }}</div>
+          </div>
+          <div class="col-4 border-end">
+            <div class="text-secondary">Expected</div>
+            <div class="fw-bold">{{ data.total }}</div>
+          </div>
+          <div class="col-4">
+            <div class="text-secondary">Status</div>
+            <div class="fw-bold {% if data.below_threshold %}text-danger{% else %}text-success{% endif %}">
+              {% if data.below_threshold %}Warning{% else %}Good{% endif %}
+            </div>
+          </div>
+        </div>
+        
+        {% if data.below_threshold %}
+        <div class="alert alert-danger mt-3 small mb-0 py-2 border-0 bg-danger-subtle text-danger">
+          <i class="fas fa-exclamation-triangle me-2"></i>You are below the {{ threshold }}% threshold.
+        </div>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  {% if not attendance_data %}
+  <div class="card glass p-5 text-center text-secondary">
+    <p>No attendance records available. Enroll in courses and wait for instructors to mark attendance.</p>
+  </div>
+  {% endif %}
+</section>
+{% endblock %}

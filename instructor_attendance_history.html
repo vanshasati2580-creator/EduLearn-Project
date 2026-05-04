@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="container py-5">
+  <div class="card glass border-0 shadow-sm p-4 mb-4">
+    <div class="d-flex align-items-center justify-content-between">
+      <div>
+        <h2 class="fw-bold mb-1">{{ course.title }}</h2>
+        <div class="text-secondary small">Attendance History & Statistics</div>
+      </div>
+      <a href="{{ url_for('mark_attendance', cid=course.id) }}" class="btn btn-primary rounded-pill px-4">
+        <i class="fas fa-plus me-2"></i>Mark Today
+      </a>
+    </div>
+  </div>
+
+  <div class="card glass border-0 shadow-sm overflow-hidden">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0 text-center">
+        <thead>
+          <tr>
+            <th class="text-start ps-4">Date</th>
+            <th>Total Students</th>
+            <th>Present</th>
+            <th>Late</th>
+            <th>Absent</th>
+            <th>Attendance %</th>
+            <th class="text-end pe-4">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for date, stats in history.items() %}
+          {% set avg = (stats.present / stats.total * 100) if stats.total > 0 else 0 %}
+          <tr>
+            <td class="text-start ps-4 fw-bold text-nowrap">{{ date.strftime('%B %d, %Y') }}</td>
+            <td>{{ stats.total }}</td>
+            <td><span class="text-success">{{ stats.present }}</span></td>
+            <td><span class="text-warning">{{ stats.late }}</span></td>
+            <td><span class="text-danger">{{ stats.absent }}</span></td>
+            <td>
+              <div class="progress rounded-pill bg-dark-subtle" style="height: 10px; min-width: 100px;">
+                <div class="progress-bar rounded-pill {% if avg < 75 %}bg-danger{% else %}bg-success{% endif %}" role="progressbar" style="width: {{ avg }}%" aria-valuenow="{{ avg }}" aria-valuemin="0" aria-valuemax="100"></div>
+              </div>
+              <small class="text-secondary">{{ avg|round(1) }}%</small>
+            </td>
+            <td class="text-end pe-4">
+              <a href="{{ url_for('mark_attendance', cid=course.id, date=date.isoformat()) }}" class="btn btn-sm btn-outline-primary rounded-pill">Edit</a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% if not history %}
+    <div class="p-5 text-center text-secondary">
+      <i class="fas fa-calendar-times display-4 mb-3 d-block"></i>
+      No attendance records found for this course.
+    </div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="container py-5 auth-section">
+  <div class="row align-items-center g-5">
+    <!-- Left Hero Column -->
+    <div class="col-lg-6 d-none d-lg-block slide-in-left">
+      <div class="pe-5">
+        <h1 class="display-4 fw-bold mb-4" style="line-height: 1.1; letter-spacing: -1.5px;">Start your journey with <span class="hero-title-gradient">EduLearn</span></h1>
+        <p class="lead text-secondary mb-5">Build in-demand skills with our comprehensive courses. Whether you're a beginner or an advanced professional, we have something for you.</p>
+        
+        <div class="d-flex flex-column gap-4">
+          <div class="d-flex align-items-center gap-3">
+            <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center" style="width:56px;height:56px; font-size:1.5rem;"><i class="fas fa-laptop-code"></i></div>
+            <div>
+              <div class="fw-bold fs-5">Learn from industry experts</div>
+              <div class="text-secondary small">High-quality content crafted by professionals.</div>
+            </div>
+          </div>
+          <div class="d-flex align-items-center gap-3">
+            <div class="bg-warning bg-opacity-10 text-warning rounded-circle d-flex align-items-center justify-content-center" style="width:56px;height:56px; font-size:1.5rem;"><i class="fas fa-certificate"></i></div>
+            <div>
+              <div class="fw-bold fs-5">Earn official certificates</div>
+              <div class="text-secondary small">Showcase your skills with verified credentials.</div>
+            </div>
+          </div>
+          <div class="d-flex align-items-center gap-3">
+            <div class="bg-info bg-opacity-10 text-info rounded-circle d-flex align-items-center justify-content-center" style="width:56px;height:56px; font-size:1.5rem;"><i class="fas fa-users"></i></div>
+            <div>
+              <div class="fw-bold fs-5">Join our community</div>
+              <div class="text-secondary small">Connect, discuss, and learn together.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Right Form Column -->
+    <div class="col-lg-6 col-md-10 mx-auto slide-in-right">
+      <div class="card glass p-4 p-lg-5 shadow-lg auth-card ms-lg-auto" style="border-radius: 24px;">
+        <h2 class="fw-bold mb-2">Create your account</h2>
+        <p class="text-secondary mb-4">Enter your details to get started.</p>
+        <form method="post">
+          <div class="row g-3">
+            <div class="col-12">
+              <label class="form-label fw-semibold">Full Name</label>
+              <input class="form-control form-control-lg" style="border-radius: 12px; background: rgba(255,255,255,0.04)" type="text" name="name" placeholder="E.g. Jane Doe" autocomplete="name" autofocus required>
+            </div>
+            <div class="col-12">
+              <label class="form-label fw-semibold">Email</label>
+              <input class="form-control form-control-lg" style="border-radius: 12px; background: rgba(255,255,255,0.04)" type="email" name="email" placeholder="you@domain.com" autocomplete="email" required>
+            </div>
+            <div class="col-12">
+              <label class="form-label fw-semibold">Password</label>
+              <div class="input-group input-group-lg">
+                <input id="register-password" class="form-control" style="border-radius: 12px 0 0 12px; background: rgba(255,255,255,0.04)" type="password" name="password" placeholder="Create a strong password" autocomplete="new-password" minlength="6" required>
+                <button class="btn btn-outline-secondary toggle-password" style="border-radius: 0 12px 12px 0;" type="button" data-target="#register-password">Show</button>
+              </div>
+              <div class="form-text text-secondary small mt-1"><i class="fas fa-info-circle me-1"></i>Must be at least 6 characters.</div>
+            </div>
+            <div class="col-12">
+              <label class="form-label fw-semibold">I want to...</label>
+              <select class="form-select form-select-lg" style="border-radius: 12px; background-color: rgba(255,255,255,0.04);" name="role">
+                <option value="student">Learn (Student profile)</option>
+                <option value="instructor">Teach (Instructor profile)</option>
+              </select>
+            </div>
+          </div>
+          <button class="btn btn-primary btn-lg w-100 mt-4 mb-3" style="border-radius: 12px;">Sign up</button>
+          
+          <div class="text-center small text-secondary">Already have an account? <a href="{{ url_for('login') }}" class="fw-bold text-decoration-none" style="color: var(--primary);">Sign in</a></div>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

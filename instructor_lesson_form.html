@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="container py-5">
+  {% set is_edit = lesson is not none %}
+  <div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+      <h2 class="fw-bold mb-0">{{ 'Edit Lesson' if is_edit else 'New Lesson' }}</h2>
+      <div class="text-secondary">Course: {{ course.title }}</div>
+    </div>
+    <a href="{{ request.args.get('back') or url_for('instructor_lessons', cid=course.id) }}" class="btn btn-outline-secondary rounded-pill">Back</a>
+  </div>
+
+  <div class="card glass p-4">
+    <form method="post" action="{{ (url_for('instructor_lesson_edit', lid=lesson.id, back=request.args.get('back')) if is_edit else url_for('instructor_lesson_new', cid=course.id, back=request.args.get('back'))) }}">
+      <div class="row g-3">
+        <div class="col-md-8">
+          <label class="form-label">Title</label>
+          <input class="form-control form-control-lg" name="title" type="text" placeholder="Lesson title" value="{{ lesson.title if is_edit }}" required>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Position</label>
+          <input class="form-control" name="position" type="number" min="0" step="1" value="{{ lesson.position if is_edit else 0 }}">
+        </div>
+        <div class="col-12">
+          <label class="form-label">Video URL</label>
+          <input class="form-control" name="video_url" type="url" placeholder="https://..." value="{{ lesson.video_url if is_edit }}">
+          <div class="form-text text-secondary">Optional. You can paste a YouTube/Vimeo link or leave empty.</div>
+        </div>
+        <div class="col-12">
+          <label class="form-label">Content</label>
+          <textarea class="form-control" name="content" rows="10" placeholder="Write your lesson content here..." required>{{ lesson.content if is_edit }}</textarea>
+        </div>
+      </div>
+      <div class="d-flex gap-2 mt-4">
+        <button class="btn btn-primary rounded-pill">{{ 'Save Changes' if is_edit else 'Create Lesson' }}</button>
+        <a href="{{ request.args.get('back') or url_for('instructor_lessons', cid=course.id) }}" class="btn btn-outline-secondary rounded-pill">Cancel</a>
+        {% if is_edit %}
+        <a href="{{ url_for('lesson_view', lid=lesson.id) }}" class="btn btn-outline-secondary rounded-pill">Preview</a>
+        {% endif %}
+      </div>
+    </form>
+  </div>
+</section>
+{% endblock %}

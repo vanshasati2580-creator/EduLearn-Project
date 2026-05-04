@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="container py-5">
+  {% set is_edit = course is not none %}
+  <div class="d-flex align-items-center justify-content-between mb-3">
+    <h2 class="fw-bold">{{ 'Edit Course' if is_edit else 'New Course' }}</h2>
+    <a href="{{ request.args.get('back') or url_for('instructor_courses') }}" class="btn btn-outline-secondary rounded-pill">Back</a>
+  </div>
+
+  <div class="card glass p-4">
+    <form method="post" enctype="multipart/form-data" action="{{ (url_for('instructor_course_edit', cid=course.id, back=request.args.get('back')) if is_edit else url_for('instructor_course_new', back=request.args.get('back'))) }}">
+      <div class="row g-3">
+        <div class="col-12">
+          <label class="form-label">Title</label>
+          <input class="form-control form-control-lg" name="title" type="text" placeholder="Course title" value="{{ course.title if is_edit }}" required>
+        </div>
+        <div class="col-12">
+          <label class="form-label">Short Description</label>
+          <input class="form-control" name="short_desc" type="text" maxlength="300" placeholder="A short summary of the course" value="{{ course.short_desc if is_edit }}" required>
+        </div>
+        <div class="col-12">
+          <label class="form-label">Long Description</label>
+          <textarea class="form-control" name="long_desc" rows="6" placeholder="Detailed description of the course" required>{{ course.long_desc if is_edit }}</textarea>
+        </div>
+        <div class="col-12">
+          <label class="form-label">Thumbnail Image</label>
+          <input class="form-control mb-2" name="thumbnail_file" type="file" accept="image/*">
+          
+          <label class="form-label">Or Thumbnail URL</label>
+          <input class="form-control" name="thumbnail" type="url" placeholder="https://..." value="{{ course.thumbnail if is_edit }}">
+          <div class="form-text text-secondary">Upload an image to override the URL. A 16:9 image works best.</div>
+        </div>
+      </div>
+      <div class="d-flex gap-2 mt-4">
+        <button class="btn btn-primary rounded-pill">{{ 'Save Changes' if is_edit else 'Create Course' }}</button>
+        <a href="{{ request.args.get('back') or url_for('instructor_courses') }}" class="btn btn-outline-secondary rounded-pill">Cancel</a>
+      </div>
+    </form>
+  </div>
+</section>
+{% endblock %}
